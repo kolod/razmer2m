@@ -17,6 +17,24 @@ The emulator simulates the operation of the Razmer 2M-1104 УЧПУ in terms of 
 - Arduino Mega 2560
 - Appropriate wiring as specified in the gpio options files
 
+### Pin Mapping Table
+
+| Signal Name | ATmega2560 Pin | ATmega328p Pin | Description                |
+|-------------|----------------|----------------|----------------------------|
+| W1_PIN      | PH3            | PB0            | МР1 bit 1                  |
+| W2_PIN      | PH4            | PB1            | МР1 bit 2                  |
+| W4_PIN      | PH5            | PB2            | МР1 bit 4                  |
+| W8_PIN      | PH6            | PB3            | МР1 bit 8                  |
+| ER_PIN      | PH1            | PB4            | МР1.3Б.9 (error signal)    |
+| B0_PIN      | PA0            | PC0            | Subcycle B0                |
+| B1_PIN      | PA1            | PC1            | Subcycle B1                |
+| B2_PIN      | PA2            | PC2            | Subcycle B2                |
+| B3_PIN      | PA3            | PC3            | Subcycle B3                |
+| B4_PIN      | PA4            | PC4            | Subcycle B4                |
+| A7_PIN      | PH0            | PC5            | Cycle A7                   |
+
+*Note: Pin assignments are defined in `config.h` and depend on the target microcontroller (ATmega2560 or ATmega328p).*
+
 ## Configuration
 
 ### 1. File config.h
@@ -48,24 +66,6 @@ pio device monitor
 ### Using PlatformIO IDE:
 1. Open the project folder in VS Code with PlatformIO extension
 2. Use the PlatformIO toolbar to build and upload
-
-## Project Structure
-
-```
-├── platformio.ini          # PlatformIO configuration
-├── src/
-│   └── main.cpp            # Main Arduino sketch
-├── include/
-│   ├── config.h            # Project configuration
-│   └── modules.h           # Module includes
-├── lib/
-│   └── modules/            # All project modules
-│       ├── app/            # Main application logic
-│       ├── gpio/           # GPIO handling
-│       ├── debug/          # Debug utilities
-│       └── ...             # Other modules
-└── test/                   # Unit tests (if any)
-```
 
 ## Connection Scheme
 

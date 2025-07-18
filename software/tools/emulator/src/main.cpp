@@ -31,6 +31,9 @@ void writeNextSign() {
 #if defined(BOARD_ATmega2560)
     // For ATmega2560, use direct port manipulation
     PORTH = (PORTH & 0x85) | (0x04 * esbuffer_getItemSign(ind)) | (0x02 * (esbuffer_getItemError(ind) == YES));
+#elif defined(BOARD_ATmega328)
+    // For ATmega328, use direct port manipulation
+    PORTB = (PORTB & 0xE0) | (0x01 * esbuffer_getItemSign(ind)) | (0x10 * (esbuffer_getItemError(ind) == YES));
 #endif
 	ind++;
 }
@@ -49,6 +52,8 @@ static biState_t run_B0() {
 		writeNextSign();
 #if defined(BOARD_ATmega2560)
         PORTA = 0x02; // B1
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x02; // B1
 #endif
 		run = run_B1;
 	}
@@ -60,6 +65,8 @@ static biState_t run_B1() {
 		writeNextSign();
 #if defined(BOARD_ATmega2560)
         PORTA = 0x04; // B2
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x04; // B2
 #endif
 		run = run_B2;
 	}
@@ -71,6 +78,8 @@ static biState_t run_B2() {
 		writeNextSign();
 #if defined(BOARD_ATmega2560)
         PORTA = 0x08; // B3
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x08; // B3
 #endif
 		run = run_B3;
 	}
@@ -82,6 +91,8 @@ static biState_t run_B3() {
 		writeNextSign();
 #if defined(BOARD_ATmega2560)
         PORTA = 0x16; // B4
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x10; // B4
 #endif
 		run = run_B4;
 	}
@@ -94,12 +105,16 @@ static biState_t run_B4() {
 		if (a_count == 7) {
 #if defined(BOARD_ATmega2560)
             PORTA = 0x21; // A7B0
+#elif defined(BOARD_ATmega328)
+            PORTC = 0x21; // A7B0
 #endif
 			run = run_A7B0;
 			return IDLE;
 		}
 #if defined(BOARD_ATmega2560)
         PORTA = 0x01; // B0
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x01; // B0
 #endif
 		run = run_B0;
 	}
@@ -110,6 +125,8 @@ static biState_t run_A7B0() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
         PORTA = 0x22; // A7B1
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x22; // A7B1
 #endif
 		run = run_A7B1;
 	}
@@ -120,6 +137,8 @@ static biState_t run_A7B1() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
         PORTA = 0x24; // A7B2
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x24; // A7B2
 #endif
 		run = run_A7B2;
 	}
@@ -130,6 +149,8 @@ static biState_t run_A7B2() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
         PORTA = 0x28; // A7B3
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x28; // A7B3
 #endif
 		run = run_A7B3;
 	}
@@ -140,6 +161,8 @@ static biState_t run_A7B3() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
         PORTA = 0x30; // A7B4
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x30; // A7B4
 #endif
 		run = run_A7B4;
 	}
@@ -150,6 +173,8 @@ static biState_t run_A7B4() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
         PORTA = 0x01; // B0
+#elif defined(BOARD_ATmega328)
+        PORTC = 0x01; // B0
 #endif
 		a_count = 0;
 		ind = 0;
@@ -171,7 +196,7 @@ void setup() {
 	pinMode(B3_PIN, OUTPUT);
 	pinMode(B4_PIN, OUTPUT);
 	pinMode(A7_PIN, OUTPUT);
-	pinMode(DLED_PIN, OUTPUT);
+	pinMode(LED_BUILTIN, OUTPUT);
 
 	run = run_START;
 }
