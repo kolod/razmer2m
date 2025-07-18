@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "razmer2m1104.h"
+#include "config.h"
 #include "yn_t.h"
 
 class TBuffer {
