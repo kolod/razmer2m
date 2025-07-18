@@ -1,4 +1,4 @@
-#include "tbufer.h"
+#include "tbuffer.h"
 #include "ascii2bcd.h"
 #include "tcode.h"
 #include "viv_t.h"
