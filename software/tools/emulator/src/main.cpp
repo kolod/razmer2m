@@ -2,13 +2,13 @@
 #include "config.h"
 #include "timer.h"
 #include "config.h"
-#include "esbuffer.h"
+#include "tbuffer.h"
 
 
 static MicrosTimer btimer;
 static MillisTimer change_timer;
 static MillisTimer mode_timer;
-
+TBuffer buffer;
 
 static int a_count = 0;
 static int ind = 0;
@@ -54,10 +54,10 @@ static void (*changeData)() = changeData_START;
 void writeNextSign() {
 #if defined(BOARD_ATmega2560)
     // For ATmega2560, use direct port manipulation
-    PORTH = (PORTH & 0x85) | (0x04 * esbuffer_getItemSign(ind)) | (0x02 * (esbuffer_getItemError(ind) == YES));
+    PORTH = (PORTH & 0x85) | (0x04 * buffer.getItemSign(ind)) | (0x02 * (buffer.getItemError(ind) == YES));
 #elif defined(BOARD_ATmega328)
     // For ATmega328, use direct port manipulation
-    PORTB = (PORTB & 0xE0) | (0x01 * esbuffer_getItemSign(ind)) | (0x10 * (esbuffer_getItemError(ind) == YES));
+    PORTB = (PORTB & 0xE0) | (0x01 * buffer.getItemSign(ind)) | (0x10 * (buffer.getItemError(ind) == YES));
 #endif
 	ind++;
 }
@@ -174,7 +174,7 @@ static void changeData_START() {
 
 static void changeData_STEP1(){
 	if (change_timer.checkAndReset()) {
-		esbuffer_changeData();
+		buffer.changeData();
 	}
 
 	if (mode_timer.checkAndReset()) {
@@ -185,7 +185,7 @@ static void changeData_STEP1(){
 
 static void changeData_STEP2(){
 	if (change_timer.checkAndReset()) {
-		esbuffer_changeNextItemError();
+		buffer.changeError();
 	} 
 	
 	if (mode_timer.check()) {
@@ -202,7 +202,7 @@ static void changeData_STEP3(){
 		mode_timer.setInterval(10000);
 		mode_timer.reset();
 		change_timer.reset();
-		esbuffer_reset();
+		buffer.reset();
 		changeData = changeData_STEP1;
 		return;
 	}
@@ -230,5 +230,5 @@ void setup() {
 	pinMode(A7_PIN, OUTPUT);
 	pinMode(LED_BUILTIN, OUTPUT);
 
-	esbuffer_reset();
+	buffer.reset();
 }
