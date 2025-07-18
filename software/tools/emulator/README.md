@@ -1,6 +1,6 @@
 # Razmer 2M-1104 УЧПУ Emulator
 
-This is a PlatformIO project for the Razmer 2M-1104 УЧПУ (Numerical Control Unit) emulator, designed to run on Arduino Mega 2560.
+This is an Arduino-based emulator for a Razmer 2M-1104 УЧПУ (Numerical Control Unit) - a Soviet/Russian CNC control system. The emulator simulates the behavior of this industrial control unit.
 
 ## Description
 
