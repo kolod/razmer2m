@@ -1,0 +1,56 @@
+# PlatformIO
+.pio/
+.vscode/
+*.tmp
+*.bak
+
+# Build artifacts
+build/
+.pioenvs/
+.piolibdeps/
+
+# IDE files
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*~
+*.swp
+*.swo
+
+# Compiled Object files
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.hex
+*.elf
+
+# Local environment variables
+.env
+.env.local
