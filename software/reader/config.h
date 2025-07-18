@@ -1,0 +1,20 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define START_DELAY_MS			5000
+
+#ifdef MODE_TEST
+#define READER_IMITATION
+#else
+
+//#define READER_IMITATION
+#define READER_REAL
+
+#endif
+
+#define GPIO_OPTIONS_ARDUINO_MEGA_PRO_AVR
+//#define GPIO_OPTIONS_ARDUINO_MEGA_PRO_WIRING
+
+#define GPIO_INVERT_B_SIGNALS
+
+#endif
