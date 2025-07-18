@@ -5,12 +5,12 @@ on:
     branches: [ main ]
     paths:
       - 'firmware/emulator/**'
-      - '.github/workflows/emulator-ci.yml'
+      - '.github/workflows/emulator-ci.yaml'
   pull_request:
     branches: [ main ]
     paths:
       - 'firmware/emulator/**'
-      - '.github/workflows/emulator-ci.yml'
+      - '.github/workflows/emulator-ci.yaml'
   workflow_dispatch:
     inputs:
       environment:
