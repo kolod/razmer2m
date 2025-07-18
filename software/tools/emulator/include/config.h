@@ -1,6 +1,9 @@
 #pragma once
 
-#define START_DELAY_MS			5000
+#if !defined(START_DELAY_MS)
+    #define START_DELAY_MS 5000
+#endif
+
 #define GPIO_INVERT_B_SIGNALS
 
 #if defined(BOARD_ATmega2560)

@@ -51,9 +51,17 @@ static biState_t run_B0() {
 	if (tonur(btimer)) {
 		writeNextSign();
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x02; // B1
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x02 & 0x1F; // B1 inverted
+#else
+		PORTA = 0x02; // B1
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x02; // B1
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x02 & 0x3F; // B1 inverted
+#else
+		PORTC = 0x02; // B1
+#endif
 #endif
 		run = run_B1;
 	}
@@ -64,9 +72,17 @@ static biState_t run_B1() {
 	if (tonur(btimer)) {
 		writeNextSign();
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x04; // B2
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x04 & 0x1F; // B2 inverted
+#else
+		PORTA = 0x04; // B2
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x04; // B2
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x04 & 0x3F; // B2 inverted
+#else
+		PORTC = 0x04; // B2
+#endif
 #endif
 		run = run_B2;
 	}
@@ -77,9 +93,17 @@ static biState_t run_B2() {
 	if (tonur(btimer)) {
 		writeNextSign();
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x08; // B3
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x08 & 0x1F; // B3 inverted
+#else
+		PORTA = 0x08; // B3
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x08; // B3
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x08 & 0x3F; // B3 inverted
+#else
+		PORTC = 0x08; // B3
+#endif
 #endif
 		run = run_B3;
 	}
@@ -90,9 +114,17 @@ static biState_t run_B3() {
 	if(tonur(btimer)){
 		writeNextSign();
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x16; // B4
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x10 & 0x1F; // B4 inverted
+#else
+		PORTA = 0x10; // B4
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x10; // B4
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x10 & 0x3F; // B4 inverted
+#else
+		PORTC = 0x10; // B4
+#endif
 #endif
 		run = run_B4;
 	}
@@ -104,17 +136,33 @@ static biState_t run_B4() {
 		a_count++;
 		if (a_count == 7) {
 #if defined(BOARD_ATmega2560)
-            PORTA = 0x21; // A7B0
+#ifdef GPIO_INVERT_B_SIGNALS
+			PORTA = ~0x21 & 0x1F; // A7B0 inverted
+#else
+			PORTA = 0x21; // A7B0
+#endif
 #elif defined(BOARD_ATmega328)
-            PORTC = 0x21; // A7B0
+#ifdef GPIO_INVERT_B_SIGNALS
+			PORTC = ~0x21 & 0x3F; // A7B0 inverted
+#else
+			PORTC = 0x21; // A7B0
+#endif
 #endif
 			run = run_A7B0;
 			return IDLE;
 		}
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x01; // B0
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x01 & 0x1F; // B0 inverted
+#else
+		PORTA = 0x01; // B0
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x01; // B0
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x01 & 0x3F; // B0 inverted
+#else
+		PORTC = 0x01; // B0
+#endif
 #endif
 		run = run_B0;
 	}
@@ -124,9 +172,17 @@ static biState_t run_B4() {
 static biState_t run_A7B0() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x22; // A7B1
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x22 & 0x1F; // A7B1 inverted
+#else
+		PORTA = 0x22; // A7B1
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x22; // A7B1
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x22 & 0x3F; // A7B1 inverted
+#else
+		PORTC = 0x22; // A7B1
+#endif
 #endif
 		run = run_A7B1;
 	}
@@ -136,9 +192,17 @@ static biState_t run_A7B0() {
 static biState_t run_A7B1() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x24; // A7B2
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x24 & 0x1F; // A7B2 inverted
+#else
+		PORTA = 0x24; // A7B2
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x24; // A7B2
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x24 & 0x3F; // A7B2 inverted
+#else
+		PORTC = 0x24; // A7B2
+#endif
 #endif
 		run = run_A7B2;
 	}
@@ -148,9 +212,17 @@ static biState_t run_A7B1() {
 static biState_t run_A7B2() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x28; // A7B3
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x28 & 0x1F; // A7B3 inverted
+#else
+		PORTA = 0x28; // A7B3
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x28; // A7B3
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x28 & 0x3F; // A7B3 inverted
+#else
+		PORTC = 0x28; // A7B3
+#endif
 #endif
 		run = run_A7B3;
 	}
@@ -160,9 +232,17 @@ static biState_t run_A7B2() {
 static biState_t run_A7B3() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x30; // A7B4
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x30 & 0x1F; // A7B4 inverted
+#else
+		PORTA = 0x30; // A7B4
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x30; // A7B4
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x30 & 0x3F; // A7B4 inverted
+#else
+		PORTC = 0x30; // A7B4
+#endif
 #endif
 		run = run_A7B4;
 	}
@@ -172,9 +252,17 @@ static biState_t run_A7B3() {
 static biState_t run_A7B4() {
 	if (tonur(btimer)) {
 #if defined(BOARD_ATmega2560)
-        PORTA = 0x01; // B0
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTA = ~0x01 & 0x1F; // B0 inverted
+#else
+		PORTA = 0x01; // B0
+#endif
 #elif defined(BOARD_ATmega328)
-        PORTC = 0x01; // B0
+#ifdef GPIO_INVERT_B_SIGNALS
+		PORTC = ~0x01 & 0x3F; // B0 inverted
+#else
+		PORTC = 0x01; // B0
+#endif
 #endif
 		a_count = 0;
 		ind = 0;
