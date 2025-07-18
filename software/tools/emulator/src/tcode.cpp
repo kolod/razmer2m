@@ -5,11 +5,11 @@ uint8_t tcode_getSign(uint8_t code){
 	return code & CONNECTION_ERROR_MASK_0;
 }
 
-yn_t tcode_getError(uint8_t code){
+bool tcode_getError(uint8_t code){
 	if(code & CONNECTION_ERROR_MASK_1){
-		return YES;
+		return true;
 	}
-	return NO;
+	return false;
 }
 
 void tcode_setError(uint8_t *code){

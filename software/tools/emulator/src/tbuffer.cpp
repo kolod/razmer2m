@@ -33,7 +33,7 @@ void TBuffer::changeData() {
 		} else {
 			v1 = 0;
 		}
-		if (tcode_getError(v0) == YES) {
+		if (tcode_getError(v0) == true) {
 			tcode_setError(&v1);
 		}
 		items[i] = v1;
@@ -48,7 +48,7 @@ void TBuffer::changeData() {
 			v2 = asciiToBcd('-');
 		}
 
-		if (tcode_getError(v0) == YES) {
+		if (tcode_getError(v0) == true) {
 			tcode_setError(&v2);
 		}
 
@@ -66,11 +66,11 @@ void TBuffer::goToNextError() {
 	error_index = ei;
 }
 
-void TBuffer::setCurrentItemError(yn_t v) {
+void TBuffer::setCurrentItemError(bool v) {
 	int ei = error_index;
 	if (ei >= 0 && ei < RAZMER2M_SIGNS_COUNT) {
 		uint8_t vb = items[ei];
-		if (v == YES) {
+		if (v == true) {
 			tcode_setError(&vb);
 		} else {
 			tcode_clearError(&vb);
@@ -80,9 +80,9 @@ void TBuffer::setCurrentItemError(yn_t v) {
 }
 
 void TBuffer::changeError() {
-	setCurrentItemError(NO);
+	setCurrentItemError(false);
 	goToNextError();
-	setCurrentItemError(YES);
+	setCurrentItemError(true);
 }
 
 uint8_t TBuffer::getItemSign(uint8_t item_index) {
@@ -93,10 +93,10 @@ uint8_t TBuffer::getItemSign(uint8_t item_index) {
 	return tcode_getSign(items[item_index]);
 }
 
-yn_t TBuffer::getItemError(uint8_t item_index) {
+bool TBuffer::getItemError(uint8_t item_index) {
 	// Check if item_index is valid 
 	// and return the sign for the item
-	if (item_index >= RAZMER2M_SIGNS_COUNT) return NO;
+	if (item_index >= RAZMER2M_SIGNS_COUNT) return false;
 
 	// Get the error status from the tcode
 	return tcode_getError(items[item_index]);

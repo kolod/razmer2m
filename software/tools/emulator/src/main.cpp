@@ -54,10 +54,10 @@ static void (*changeData)() = changeData_START;
 void writeNextSign() {
 #if defined(BOARD_ATmega2560)
     // For ATmega2560, use direct port manipulation
-    PORTH = (PORTH & 0x85) | (0x04 * buffer.getItemSign(ind)) | (0x02 * (buffer.getItemError(ind) == YES));
+    PORTH = (PORTH & 0x85) | (0x04 * buffer.getItemSign(ind)) | (0x02 * (buffer.getItemError(ind) == true));
 #elif defined(BOARD_ATmega328)
     // For ATmega328, use direct port manipulation
-    PORTB = (PORTB & 0xE0) | (0x01 * buffer.getItemSign(ind)) | (0x10 * (buffer.getItemError(ind) == YES));
+    PORTB = (PORTB & 0xE0) | (0x01 * buffer.getItemSign(ind)) | (0x10 * (buffer.getItemError(ind) == true));
 #endif
 	ind++;
 }
