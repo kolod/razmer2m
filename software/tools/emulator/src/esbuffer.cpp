@@ -1,25 +1,24 @@
 #include "esbuffer.h"
 #include "tbuffer.h"
 
-TBuffer buffern;
-TBuffer *buffer = &buffern;
+TBuffer buffer;
 
 void esbuffer_reset(){
-	tbuffer_reset(buffer);
+	buffer.reset();
 }
 
 void esbuffer_changeData(){
-	tbuffer_changeData(buffer);
+	buffer.changeData();
 }
 
 void esbuffer_changeNextItemError(){
-	tbuffer_changeError(buffer);
+	buffer.changeError();
 }
 
 uint8_t esbuffer_getItemSign(int item_index){
-	return tbuffer_getItemSign(buffer, item_index);
+	return buffer.getItemSign(item_index);
 }
 
 yn_t esbuffer_getItemError(int item_index){
-	return tbuffer_getItemError(buffer, item_index);
+	return buffer.getItemError(item_index);
 }

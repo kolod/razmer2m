@@ -4,15 +4,20 @@
 #include "razmer2m1104.h"
 #include "yn_t.h"
 
-typedef struct tbuffer_st {
+class TBuffer {
+private:
 	uint8_t items[RAZMER2M_SIGNS_COUNT];
 	int error_index;
-} TBuffer;
+	
+	void goToNextError();
+	void setCurrentItemError(yn_t v);
 
-extern int tbuffer_getCount(TBuffer *self);
-extern void tbuffer_reset(TBuffer *self);
-extern void tbuffer_changeData(TBuffer *self);
-extern void tbuffer_changeError(TBuffer *self);
-extern uint8_t tbuffer_getItemSign(TBuffer *self, int item_index);
-extern yn_t tbuffer_getItemError(TBuffer *self, int item_index);
-extern uint8_t tbuffer_getItemCode(TBuffer *self, int item_index);
+public:
+	int getCount();
+	void reset();
+	void changeData();
+	void changeError();
+	uint8_t getItemSign(uint8_t item_index);
+	yn_t getItemError(uint8_t item_index);
+	uint8_t getItemCode(uint8_t item_index);
+};

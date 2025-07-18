@@ -1,18 +1,17 @@
 #include "tbuffer.h"
 #include "ascii2bcd.h"
 #include "tcode.h"
-#include "viv_t.h"
 
-int tbuffer_getCount(TBuffer *self){
+int TBuffer::getCount(){
 	return RAZMER2M_SIGNS_COUNT;
 }
 
-void tbuffer_reset(TBuffer *self){
+void TBuffer::reset(){
 	int row = 1;
 	int v = 1;
 	for(int i=0; i<RAZMER2M_SIGNS_COUNT - 4; i++){
-		self->items[i] = v;
-		if(row < 4){
+		items[i] = v;
+		if (row < 4) {
 			row++;
 		} else {
 			row = 1;
@@ -20,93 +19,94 @@ void tbuffer_reset(TBuffer *self){
 		}
 	}
 	for(int i=RAZMER2M_SIGNS_COUNT - 4; i<RAZMER2M_SIGNS_COUNT; i++){
-		self->items[i] = asciiToBcd('+');
+		items[i] = asciiToBcd('+');
 	}
-	self->error_index = 0;
+	error_index = 0;
 }
 
-void tbuffer_changeData(TBuffer *self){
-	for(int i=0; i<RAZMER2M_SIGNS_COUNT - 4; i++){
-		uint8_t v0 = self->items[i];
+void TBuffer::changeData(){
+	for (int i=0; i<RAZMER2M_SIGNS_COUNT - 4; i++) {
+		uint8_t v0 = items[i];
 		uint8_t v1 = tcode_getSign(v0);
-		if(v1 < 9){
+		if (v1 < 9) {
 			v1 += 1;
 		} else {
 			v1 = 0;
 		}
-		if(tcode_getError(v0) == YES){
+		if (tcode_getError(v0) == YES) {
 			tcode_setError(&v1);
 		}
-		self->items[i] = v1;
+		items[i] = v1;
 	}
-	for(int i=RAZMER2M_SIGNS_COUNT - 4; i<RAZMER2M_SIGNS_COUNT; i++){
-		uint8_t v0 = self->items[i];
+
+	for (int i=RAZMER2M_SIGNS_COUNT - 4; i<RAZMER2M_SIGNS_COUNT; i++) {
+		uint8_t v0 = items[i];
 		uint8_t v1 = tcode_getSign(v0);
 		uint8_t v2 = asciiToBcd('+');
-		if(v1 == asciiToBcd('+')){
+
+		if (v1 == asciiToBcd('+')) {
 			v2 = asciiToBcd('-');
 		}
-		if(tcode_getError(v0) == YES){
+
+		if (tcode_getError(v0) == YES) {
 			tcode_setError(&v2);
 		}
-		self->items[i] = v2;
+
+		items[i] = v2;
 	}
 }
 
-static void goToNextError(TBuffer *self){
-	int ei = self->error_index;
-	if(ei >= 0 && ei < RAZMER2M_SIGNS_COUNT){
+void TBuffer::goToNextError(){
+	int ei = error_index;
+	if (ei >= 0 && ei < RAZMER2M_SIGNS_COUNT) {
 		ei++;
 	} else {
 		ei = 0;
 	}
-	self->error_index = ei;
+	error_index = ei;
 }
 
-static void setCurrentItemError(TBuffer *self, yn_t v){
-	int ei = self->error_index;
-	if(ei >= 0 && ei < RAZMER2M_SIGNS_COUNT){
-		uint8_t vb = self->items[ei];
-		if(v == YES){
+void TBuffer::setCurrentItemError(yn_t v){
+	int ei = error_index;
+	if (ei >= 0 && ei < RAZMER2M_SIGNS_COUNT) {
+		uint8_t vb = items[ei];
+		if (v == YES) {
 			tcode_setError(&vb);
 		} else {
 			tcode_clearError(&vb);
 		}
-		self->items[ei] = vb;
+		items[ei] = vb;
 	}
 }
 
-void tbuffer_changeError(TBuffer *self){
-	setCurrentItemError(self, NO);
-	goToNextError(self);
-	setCurrentItemError(self, YES);
+void TBuffer::changeError(){
+	setCurrentItemError(NO);
+	goToNextError();
+	setCurrentItemError(YES);
 }
 
-static viv_t checkItemIndex(int v){
-	if(v >= 0 && v < RAZMER2M_SIGNS_COUNT){
-		return VALID;
-	}
-	return INVALID;
+uint8_t TBuffer::getItemSign(uint8_t item_index) {
+	// Check if item_index is valid and return the sign for the item
+	if (item_index >= RAZMER2M_SIGNS_COUNT) return 0;
+	
+	// Get the sign from the tcode
+	return tcode_getSign(items[item_index]);
 }
 
-uint8_t tbuffer_getItemSign(TBuffer *self, int item_index){
-	if(checkItemIndex(item_index) == VALID){
-		return tcode_getSign(self->items[item_index]);
-	}
-	return 0;
+yn_t TBuffer::getItemError(uint8_t item_index){
+	// Check if item_index is valid 
+	// and return the sign for the item
+	if (item_index >= RAZMER2M_SIGNS_COUNT) return NO;
+
+	// Get the error status from the tcode
+	return tcode_getError(items[item_index]);
 }
 
-yn_t tbuffer_getItemError(TBuffer *self, int item_index){
-	if(checkItemIndex(item_index) == VALID){
-		return tcode_getError(self->items[item_index]);
-	}
-	return NO;
-}
+uint8_t TBuffer::getItemCode(uint8_t item_index){
+	// Check if item_index is valid and return the sign for the item
+	if (item_index >= RAZMER2M_SIGNS_COUNT) return 0;
 
-uint8_t tbuffer_getItemCode(TBuffer *self, int item_index){
-	if(checkItemIndex(item_index) == VALID){
-		return self->items[item_index];
-	}
-	return 0;
+	// Return the item code directly
+	return items[item_index];
 }
 
