@@ -5,12 +5,9 @@
 #include "esbuffer.h"
 
 
-static Ton btimern;
-static Ton *btimer = &btimern;
-static Ton change_timern;
-static Ton *change_timer = &change_timern;
-static Ton mode_timern;
-static Ton *mode_timer = &mode_timern;
+static MicrosTimer btimer;
+static MillisTimer change_timer;
+static MillisTimer mode_timer;
 
 
 static int a_count = 0;
@@ -66,8 +63,8 @@ void writeNextSign() {
 }
 
 static bool run_START() {
-	ton_setInterval(btimer, 500);
-	tonu_reset(btimer);
+	btimer.setInterval(500);
+	btimer.reset();
 	a_count = 0;
 	ind = 0;
 	run = run_B0;
@@ -75,7 +72,7 @@ static bool run_START() {
 }
 
 static bool run_B0() {
-	if (tonur(btimer)) {
+	if (btimer.checkAndReset()) {
 		writeNextSign();
 		setBSignals(0x02); // B1
 		run = run_B1;
@@ -84,7 +81,7 @@ static bool run_B0() {
 }
 
 static bool run_B1() {
-	if (tonur(btimer)) {
+	if (btimer.checkAndReset()) {
 		writeNextSign();
 		setBSignals(0x04); // B2
 		run = run_B2;
@@ -93,7 +90,7 @@ static bool run_B1() {
 }
 
 static bool run_B2() {
-	if (tonur(btimer)) {
+	if (btimer.checkAndReset()) {
 		writeNextSign();
 		setBSignals(0x08); // B3
 		run = run_B3;
@@ -102,7 +99,7 @@ static bool run_B2() {
 }
 
 static bool run_B3() {
-	if(tonur(btimer)){
+	if (btimer.checkAndReset()) {
 		writeNextSign();
 		setBSignals(0x10); // B4
 		run = run_B4;
@@ -111,7 +108,7 @@ static bool run_B3() {
 }
 
 static bool run_B4() {
-	if (tonur(btimer)) {
+	if (btimer.checkAndReset()) {
 		a_count++;
 		if (a_count == 7) {
 			setBSignals(0x21); // A7B0
@@ -125,7 +122,7 @@ static bool run_B4() {
 }
 
 static bool run_A7B0() {
-	if (tonur(btimer)) {
+	if (btimer.checkAndReset()) {
 		setBSignals(0x22); // A7B1
 		run = run_A7B1;
 	}
@@ -133,7 +130,7 @@ static bool run_A7B0() {
 }
 
 static bool run_A7B1() {
-	if (tonur(btimer)) {
+	if (btimer.checkAndReset()) {
 		setBSignals(0x24); // A7B2
 		run = run_A7B2;
 	}
@@ -141,7 +138,7 @@ static bool run_A7B1() {
 }
 
 static bool run_A7B2() {
-	if (tonur(btimer)) {
+	if (btimer.checkAndReset()) {
 		setBSignals(0x28); // A7B3
 		run = run_A7B3;
 	}
@@ -149,7 +146,7 @@ static bool run_A7B2() {
 }
 
 static bool run_A7B3() {
-	if (tonur(btimer)) {
+	if (btimer.checkAndReset()) {
 		setBSignals(0x30); // A7B4
 		run = run_A7B4;
 	}
@@ -157,7 +154,7 @@ static bool run_A7B3() {
 }
 
 static bool run_A7B4() {
-	if (tonur(btimer)) {
+	if (btimer.checkAndReset()) {
 		setBSignals(0x01); // B0
 		a_count = 0;
 		ind = 0;
@@ -168,47 +165,43 @@ static bool run_A7B4() {
 }
 
 static void changeData_START() {
-	ton_setInterval(change_timer, 500);
-	ton_setInterval(mode_timer, 10000);
-	ton_reset(change_timer);
-	ton_reset(mode_timer);
+	change_timer.setInterval(500);
+	mode_timer.setInterval(10000);
+	change_timer.reset();
+	mode_timer.reset();
 	changeData = changeData_STEP1;
 }
 
 static void changeData_STEP1(){
-	if (ton(change_timer)) {
-		ton_reset(change_timer);
+	if (change_timer.checkAndReset()) {
 		esbuffer_changeData();
 	}
 
-	if (ton(mode_timer)) {
-		ton_reset(mode_timer);
-		ton_reset(change_timer);
+	if (mode_timer.checkAndReset()) {
 		changeData = changeData_STEP2;
 		return;
 	}
 }
 
 static void changeData_STEP2(){
-	if (ton(change_timer)) {
-		ton_reset(change_timer);
+	if (change_timer.checkAndReset()) {
 		esbuffer_changeNextItemError();
 	} 
 	
-	if (ton(mode_timer)) {
-		ton_setInterval(mode_timer, 3000);
-		ton_reset(mode_timer);
-		ton_reset(change_timer);
+	if (mode_timer.check()) {
+		mode_timer.setInterval(3000);
+		mode_timer.reset();
+		change_timer.reset();
 		changeData = changeData_STEP3;
 		return;
 	}
 }
 
 static void changeData_STEP3(){
-	if (ton(mode_timer)) {
-		ton_setInterval(mode_timer, 10000);
-		ton_reset(mode_timer);
-		ton_reset(change_timer);
+	if (mode_timer.check()) {
+		mode_timer.setInterval(10000);
+		mode_timer.reset();
+		change_timer.reset();
 		esbuffer_reset();
 		changeData = changeData_STEP1;
 		return;

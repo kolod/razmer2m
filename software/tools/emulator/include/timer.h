@@ -2,26 +2,39 @@
 
 #include <Arduino.h>
 
-typedef struct {
+class Timer {
+protected:
 	unsigned long interval;
 	unsigned long start;
 	unsigned long end;
 	int active;
-} Ton;
 
-extern void ton_setInterval(Ton *self, unsigned long interval_ms);
-extern unsigned long ton_getInterval(Ton *self);
+	virtual unsigned long getCurrentTime() = 0;
 
-extern void ton_expire(Ton *self);
+public:
+	void setInterval(unsigned long interval_value);
+	unsigned long getInterval();
+	void expire();
+	unsigned long getRest();
+	int check();
+	int checkAndReset();
+	
+	// Pure virtual methods for subclasses to implement
+	virtual void reset() = 0;
+};
 
-//millis
-extern void ton_reset(Ton *self);
-extern unsigned long ton_getRest(Ton *self);
-extern int ton(Ton *self);
-extern int tonr(Ton *self);
+class MillisTimer : public Timer {
+protected:
+	unsigned long getCurrentTime() override;
 
-//micros
-extern void tonu_reset(Ton *self);
-extern unsigned long tonu_getRest(Ton *self);
-extern int tonu(Ton *self);
-extern int tonur(Ton *self);
+public:
+	void reset() override;
+};
+
+class MicrosTimer : public Timer {
+protected:
+	unsigned long getCurrentTime() override;
+
+public:
+	void reset() override;
+};
