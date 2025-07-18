@@ -2,14 +2,14 @@
 #include "ascii2bcd.h"
 #include "tcode.h"
 
-int TBuffer::getCount(){
+int TBuffer::getCount() {
 	return RAZMER2M_SIGNS_COUNT;
 }
 
-void TBuffer::reset(){
+void TBuffer::reset() {
 	int row = 1;
 	int v = 1;
-	for(int i=0; i<RAZMER2M_SIGNS_COUNT - 4; i++){
+	for (int i=0; i<RAZMER2M_SIGNS_COUNT - 4; i++) {
 		items[i] = v;
 		if (row < 4) {
 			row++;
@@ -18,13 +18,13 @@ void TBuffer::reset(){
 			v++;
 		}
 	}
-	for(int i=RAZMER2M_SIGNS_COUNT - 4; i<RAZMER2M_SIGNS_COUNT; i++){
+	for (int i=RAZMER2M_SIGNS_COUNT - 4; i<RAZMER2M_SIGNS_COUNT; i++) {
 		items[i] = asciiToBcd('+');
 	}
 	error_index = 0;
 }
 
-void TBuffer::changeData(){
+void TBuffer::changeData() {
 	for (int i=0; i<RAZMER2M_SIGNS_COUNT - 4; i++) {
 		uint8_t v0 = items[i];
 		uint8_t v1 = tcode_getSign(v0);
@@ -56,7 +56,7 @@ void TBuffer::changeData(){
 	}
 }
 
-void TBuffer::goToNextError(){
+void TBuffer::goToNextError() {
 	int ei = error_index;
 	if (ei >= 0 && ei < RAZMER2M_SIGNS_COUNT) {
 		ei++;
@@ -66,7 +66,7 @@ void TBuffer::goToNextError(){
 	error_index = ei;
 }
 
-void TBuffer::setCurrentItemError(yn_t v){
+void TBuffer::setCurrentItemError(yn_t v) {
 	int ei = error_index;
 	if (ei >= 0 && ei < RAZMER2M_SIGNS_COUNT) {
 		uint8_t vb = items[ei];
@@ -79,7 +79,7 @@ void TBuffer::setCurrentItemError(yn_t v){
 	}
 }
 
-void TBuffer::changeError(){
+void TBuffer::changeError() {
 	setCurrentItemError(NO);
 	goToNextError();
 	setCurrentItemError(YES);
@@ -93,7 +93,7 @@ uint8_t TBuffer::getItemSign(uint8_t item_index) {
 	return tcode_getSign(items[item_index]);
 }
 
-yn_t TBuffer::getItemError(uint8_t item_index){
+yn_t TBuffer::getItemError(uint8_t item_index) {
 	// Check if item_index is valid 
 	// and return the sign for the item
 	if (item_index >= RAZMER2M_SIGNS_COUNT) return NO;
@@ -102,11 +102,10 @@ yn_t TBuffer::getItemError(uint8_t item_index){
 	return tcode_getError(items[item_index]);
 }
 
-uint8_t TBuffer::getItemCode(uint8_t item_index){
+uint8_t TBuffer::getItemCode(uint8_t item_index) {
 	// Check if item_index is valid and return the sign for the item
 	if (item_index >= RAZMER2M_SIGNS_COUNT) return 0;
 
 	// Return the item code directly
 	return items[item_index];
 }
-
