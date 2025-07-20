@@ -45,6 +45,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install platformio
+
+    - name: Run unit tests
+      working-directory: firmware/emulator
+      run: pio test --verbose --environment native
     
     - name: Build firmware for ${{ matrix.environment }}
       working-directory: firmware/emulator
