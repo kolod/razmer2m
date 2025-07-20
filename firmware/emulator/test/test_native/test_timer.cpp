@@ -397,13 +397,20 @@ void test_millis_overflow() {
     TEST_ASSERT_TRUE(timer.isExpired()); // Should handle overflow correctly
     
     // Test continued operation after overflow
+    setMockTime(near_overflow + 2000000); // Set time first
     timer.reset(); // Reset at overflow point
-    setMockTime(near_overflow + 2000000);
+    // At this point: millis() returns 0, mStart = 0, interval = 2000
+    // (0 - 0) >= 2000 should be false
     TEST_ASSERT_FALSE(timer.isExpired());
     
-    // Advance another 2000ms after overflow
+    // Advance another 1000ms after overflow - should still not be expired
+    setMockTime(near_overflow + 3000000);
+    // millis() returns 1000, (1000 - 0) >= 2000 should be false
+    TEST_ASSERT_FALSE(timer.isExpired());
+    
+    // Advance another 1000ms after overflow - now should be expired
     setMockTime(near_overflow + 4000000);
-    // millis() should return 0x000007D0 at this point
+    // millis() returns 2000, (2000 - 0) >= 2000 should be true
     TEST_ASSERT_TRUE(timer.isExpired());
 }
 
@@ -430,13 +437,20 @@ void test_micros_overflow() {
     TEST_ASSERT_TRUE(timer.isExpired()); // Should handle overflow correctly
     
     // Test continued operation after overflow
+    setMockTime(near_overflow + 2000000); // Set time first
     timer.reset(); // Reset at overflow point
-    setMockTime(near_overflow + 2000000);
+    // At this point: micros() returns 0, mStart = 0, interval = 2000000
+    // (0 - 0) >= 2000000 should be false
     TEST_ASSERT_FALSE(timer.isExpired());
     
-    // Advance another 2 seconds after overflow
+    // Advance 1 second after overflow - should still not be expired
+    setMockTime(near_overflow + 3000000);
+    // micros() returns 1000000, (1000000 - 0) >= 2000000 should be false
+    TEST_ASSERT_FALSE(timer.isExpired());
+    
+    // Advance another 1 second after overflow - now should be expired
     setMockTime(near_overflow + 4000000);
-    // micros() should return 0x001E8480 at this point
+    // micros() returns 2000000, (2000000 - 0) >= 2000000 should be true
     TEST_ASSERT_TRUE(timer.isExpired());
 }
 
