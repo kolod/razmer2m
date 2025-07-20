@@ -19,12 +19,12 @@ void advanceMockTime(uint64_t time) {
 }
 
 // Mock Arduino functions
-unsigned long millis() {
-    return uint32_t((mock_time / 1000) & 0xFFFFFFFF);
+uint32_t millis() {
+    return (uint32_t)((mock_time / 1000) % 0x100000000ULL);
 }
 
-unsigned long micros() {
-    return uint32_t(mock_time & 0xFFFFFFFF);
+uint32_t micros() {
+    return (uint32_t)(mock_time % 0x100000000ULL);
 }
 
 void delay(unsigned long ms) {
@@ -379,31 +379,48 @@ void test_millis_overflow() {
     timer.setInterval(2000); // 2 second interval
     
     // Start near millis() overflow point (0xFFFFFFFF milliseconds)
-    // millis() will return 0xFFFFFFFF, 0x00000000, 0x00000001, etc.
-    uint64_t near_overflow = (uint64_t)0xFFFFFFFEUL * 1000; // Close to overflow
+    // Use a more reasonable test that doesn't cause 64-bit overflow issues
+    // We'll simulate millis() going from 0xFFFFFFFE to 0xFFFFFFFF to 0x00000000
     
-    setMockTime(near_overflow);
+    // Set mock_time so that millis() returns 0xFFFFFFFE
+    mock_time = (uint64_t)0xFFFFFFFEUL * 1000;
     timer.reset();
     // millis() should return 0xFFFFFFFE at this point
     
-    // Advance time by 1000ms - should not be expired yet
-    setMockTime(near_overflow + 1000000);
-    // millis() should return 0xFFFFFFFF at this point
+    // Advance time by 1000ms - millis() should return 0xFFFFFFFF
+    mock_time = (uint64_t)0xFFFFFFFFUL * 1000;
+    TEST_ASSERT_EQUAL(0xFFFFFFFF, millis());
     TEST_ASSERT_FALSE(timer.isExpired());
     
-    // Advance time by another 1000ms - this causes millis() to overflow
-    setMockTime(near_overflow + 2000000);
-    // millis() should return 0x00000000 at this point (overflowed)
+    // Advance time by another 1000ms - this causes millis() to overflow to 0x00000000
+    mock_time = (uint64_t)0xFFFFFFFFUL * 1000 + 1000000;
+    TEST_ASSERT_EQUAL(0x000003E7, millis()); // Should be 999 (1000000/1000 - 1)
+    // Timer was started at 0xFFFFFFFE, now at 999 - elapsed time is 1001ms
+    // Since 1001ms < 2000ms interval, should NOT be expired yet
+    TEST_ASSERT_FALSE(timer.isExpired());
+    
+    // Advance more time to make it actually expire (need 2000ms total elapsed)
+    // We've elapsed 1001ms, need 999ms more
+    mock_time = (uint64_t)0xFFFFFFFFUL * 1000 + 2000000; // +1000ms more
+    TEST_ASSERT_EQUAL(0x000007CF, millis()); // Should be 1999
+    // Now elapsed time: 1999 - 0xFFFFFFFE = 2001ms (with wraparound)
     TEST_ASSERT_TRUE(timer.isExpired()); // Should handle overflow correctly
     
     // Test continued operation after overflow
+    // Reset the timer when millis() returns a small value after overflow
+    mock_time = (uint64_t)0x100000000UL * 1000; // This makes millis() return 0
     timer.reset(); // Reset at overflow point
-    setMockTime(near_overflow + 2000000);
+    TEST_ASSERT_EQUAL(0, millis());
     TEST_ASSERT_FALSE(timer.isExpired());
     
-    // Advance another 2000ms after overflow
-    setMockTime(near_overflow + 4000000);
-    // millis() should return 0x000007D0 at this point
+    // Advance another 1000ms after overflow - should still not be expired
+    mock_time = (uint64_t)0x100000000UL * 1000 + 1000000;
+    TEST_ASSERT_EQUAL(1000, millis());
+    TEST_ASSERT_FALSE(timer.isExpired());
+    
+    // Advance another 1000ms after overflow - now should be expired
+    mock_time = (uint64_t)0x100000000UL * 1000 + 2000000;
+    TEST_ASSERT_EQUAL(2000, millis());
     TEST_ASSERT_TRUE(timer.isExpired());
 }
 
@@ -413,30 +430,42 @@ void test_micros_overflow() {
     timer.setInterval(2000000); // 2 second interval in microseconds
     
     // Start near micros() overflow point (0xFFFFFFFF microseconds)
-    uint64_t near_overflow = (uint64_t)0xFFFFFFFEUL; // Close to micros() overflow
+    // Use a cleaner approach that avoids 64-bit overflow issues
     
-    setMockTime(near_overflow);
+    // Set mock_time so that micros() returns 0xFFFFFFFE
+    mock_time = 0xFFFFFFFEUL;
     timer.reset();
     // micros() should return 0xFFFFFFFE at this point
     
-    // Advance time by 1 second - should not be expired yet
-    setMockTime(near_overflow + 1000000);
-    // micros() should return 0xFFFFFFFF at this point
+    // Advance time by 1 second - micros() should return 0xFFFFFFFF
+    mock_time = 0xFFFFFFFFUL;
     TEST_ASSERT_FALSE(timer.isExpired());
     
     // Advance time to cause micros() overflow
-    setMockTime(near_overflow + 2000000);
-    // micros() should return 0x00000000 at this point (overflowed)
+    mock_time = 0x100000000UL + 1000000; // This makes micros() return 1000000
+    // Timer was started at 0xFFFFFFFE, now at 1000000 - elapsed time is 1000002μs
+    // Since 1000002μs < 2000000μs interval, should NOT be expired yet
+    TEST_ASSERT_FALSE(timer.isExpired());
+    
+    // Advance more time to make it actually expire (need 2000000μs total elapsed)
+    // We've elapsed 1000002μs, need ~999998μs more
+    mock_time = 0x100000000UL + 2000000; // Total elapsed: 2000002μs
     TEST_ASSERT_TRUE(timer.isExpired()); // Should handle overflow correctly
     
     // Test continued operation after overflow
+    mock_time = 0x100000000UL; // This makes micros() return 0
     timer.reset(); // Reset at overflow point
-    setMockTime(near_overflow + 2000000);
+    TEST_ASSERT_EQUAL(0, micros());
     TEST_ASSERT_FALSE(timer.isExpired());
     
-    // Advance another 2 seconds after overflow
-    setMockTime(near_overflow + 4000000);
-    // micros() should return 0x001E8480 at this point
+    // Advance 1 second after overflow - should still not be expired
+    mock_time = 0x100000000UL + 1000000;
+    TEST_ASSERT_EQUAL(1000000, micros());
+    TEST_ASSERT_FALSE(timer.isExpired());
+    
+    // Advance another 1 second after overflow - now should be expired
+    mock_time = 0x100000000UL + 2000000;
+    TEST_ASSERT_EQUAL(2000000, micros());
     TEST_ASSERT_TRUE(timer.isExpired());
 }
 
