@@ -1,5 +1,5 @@
 #include "tcode.h"
-#include "connection.h"
+#include "config.h"
 
 uint8_t tcode_getSign(uint8_t code){
 	return code & CONNECTION_ERROR_MASK_0;
