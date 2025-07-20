@@ -19,7 +19,7 @@
  * - 13: '-' (minus)
  */
 const static char bcdToAsciiMapping[] = {
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#', '+', '-'
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#', '+', '-'
 };
 
 /**
@@ -31,14 +31,14 @@ const static char bcdToAsciiMapping[] = {
  * @param v ASCII character to convert
  * @return BCD value (0-13) if found, 0 if character not in mapping
  */
-int asciiToBcd(const uint8_t v){
-	// Search through the mapping table
-	for (uint8_t i = 0; i < (sizeof(bcdToAsciiMapping) / sizeof (bcdToAsciiMapping[0])); i++){
-		if(bcdToAsciiMapping[i] == v) {
-			return i; // Return the BCD value (index)
-		}
-	}
-	return 0; // Default to 0 if character not found
+int asciiToBcd(const uint8_t v) {
+    // Search through the mapping table
+    for (uint8_t i = 0; i < (sizeof(bcdToAsciiMapping) / sizeof (bcdToAsciiMapping[0])); i++){
+        if(bcdToAsciiMapping[i] == v) {
+            return i; // Return the BCD value (index)
+        }
+    }
+    return 0; // Default to 0 if character not found
 }
 
 /**
@@ -50,10 +50,10 @@ int asciiToBcd(const uint8_t v){
  * @param v BCD value (0-13) to convert
  * @return ASCII character if valid BCD value, 0 (null) if out of range
  */
-char bcdToAscii(const uint8_t v){
-	// Check if BCD value is within valid range
-	if (v < (sizeof bcdToAsciiMapping / sizeof (bcdToAsciiMapping[0]))) {
-		return bcdToAsciiMapping[v]; // Return corresponding ASCII character
-	}
-	return 0; // Return null character for invalid BCD values
+char bcdToAscii(const uint8_t v) {
+    // Check if BCD value is within valid range
+    if (v < (sizeof bcdToAsciiMapping / sizeof (bcdToAsciiMapping[0]))) {
+        return bcdToAsciiMapping[v]; // Return corresponding ASCII character
+    }
+    return 0; // Return null character for invalid BCD values
 }
