@@ -389,6 +389,7 @@ void test_millis_overflow() {
     // Advance time by 1000ms - should not be expired yet
     setMockTime(near_overflow + 1000000);
     // millis() should return 0xFFFFFFFF at this point
+    TEST_ASSERT_EQUAL(0xFFFFFFFF, millis());
     TEST_ASSERT_FALSE(timer.isExpired());
     
     // Advance time by another 1000ms - this causes millis() to overflow
@@ -440,6 +441,7 @@ void test_micros_overflow() {
     setMockTime(near_overflow + 2000000); // Set time first
     timer.reset(); // Reset at overflow point
     // At this point: micros() returns 0, mStart = 0, interval = 2000000
+    TEST_ASSERT_EQUAL(0, micros());
     // (0 - 0) >= 2000000 should be false
     TEST_ASSERT_FALSE(timer.isExpired());
     
