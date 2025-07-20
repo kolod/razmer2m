@@ -3,8 +3,8 @@
 #include <stdint.h>
 
 // Mock Arduino functions for testing
-extern unsigned long millis();
-extern unsigned long micros();
+extern uint32_t millis();
+extern uint32_t micros();
 
 // Common Arduino types
 typedef bool boolean;

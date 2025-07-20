@@ -1,18 +1,18 @@
 #include "timer.h"
 
 // Timer base class implementation
-void Timer::setInterval(unsigned long interval) {
+void Timer::setInterval(uint32_t interval) {
     this->mInterval = interval;
 }
 
-unsigned long Timer::interval() {
+uint32_t Timer::interval() {
     return mInterval;
 }
 
 // returns 1 when time is over
 // returns 0 while waiting for an interval  
 bool Timer::isExpired(bool reset) {
-    unsigned long current_time = now();
+    uint32_t current_time = now();
 
     if ((current_time - mStart) >= mInterval) {
         // Reset the timer for next interval
@@ -34,7 +34,7 @@ MillisTimer::MillisTimer() {
     mStart = now();
 }
 
-unsigned long MillisTimer::now() {
+uint32_t MillisTimer::now() {
     return millis();
 }
 
@@ -44,6 +44,6 @@ MicrosTimer::MicrosTimer() {
     mStart = now();
 }
 
-unsigned long MicrosTimer::now() {
+uint32_t MicrosTimer::now() {
     return micros();
 }
