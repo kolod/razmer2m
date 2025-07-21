@@ -1,6 +1,7 @@
 #pragma once
 
 #define START_DELAY_MS			5000
+#define BUSY_TIMEOUT_US				1700
 
 #define RAZMER2M_ROWS_COUNT				4
 #define RAZMER2M_COLUMNS_COUNT			7
