@@ -1,7 +1,9 @@
 #include <Arduino.h>
 
 #include "config.h"
-#include "modules/app/interface.h"
+#include "reader.h"
+#include "writer.h"
+#include "gpio.h"
 
 
 Buffer buffern;
@@ -10,13 +12,13 @@ Buffer *buffer = &buffern;
 void setup() {
 	delay(START_DELAY_MS);
 	gpio_begin();
-	serial_begin(CONNECTION_UART_BAUD_RATE, CONNECTION_UART_DPS);
-	reader_begin();
-	writer_begin();
+	Serial.begin(CONNECTION_UART_BAUD_RATE, CONNECTION_UART_DPS);
+	reader.begin();
+	writer.begin();
 	buffer_begin(buffer);
 }
 
 void loop() {
-	reader_run(buffer);
-	writer_run(buffer);
+	reader.run(buffer);
+	writer.run(buffer);
 }
