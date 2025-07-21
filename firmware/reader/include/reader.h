@@ -36,3 +36,5 @@ private:
     void readCode(Buffer *buffer);
     void readErrorSignals(Buffer *buffer);
 }
+
+extern Reader reader;

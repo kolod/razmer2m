@@ -32,3 +32,5 @@ private:
     bool writeDataWriteSigns(Buffer *buffer);
     bool writeDataWriteStopSign(Buffer *buffer);
 };
+
+extern Writer writer;

@@ -84,3 +84,5 @@ bool Writer::writeDataWriteStopSign(Buffer *buffer) {
     currentState = StateWaitData;
     return true;
 }
+
+Writer writer;

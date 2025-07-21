@@ -89,3 +89,5 @@ void Reader::run(Buffer *buffer) {
 		state = ReaderState::B1;
 	}
 }
+
+Reader reader;
