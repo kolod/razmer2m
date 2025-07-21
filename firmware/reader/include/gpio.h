@@ -7,12 +7,12 @@ class GPIO {
 public:
     static void begin();
     
-    static bool B0isActive();
-    static bool B1isActive();
-    static bool B2isActive();
-    static bool B3isActive();
-    static bool B4isActive();
-    static bool A7isActive();
+    static bool B0();
+    static bool B1();
+    static bool B2();
+    static bool B3();
+    static bool B4();
+    static bool A7();
 
     static uint8_t read();
 

@@ -2,7 +2,7 @@
 
 #include "gpio.h"
 
-bool GPIO::B0isActive() {
+bool GPIO::B0() {
 #ifdef GPIO_INVERT_B_SIGNALS
     return !PINA & (1 << 0);
 #else
@@ -10,7 +10,7 @@ bool GPIO::B0isActive() {
 #endif
 }
 
-bool GPIO::B1isActive() {
+bool GPIO::B1() {
 #ifdef GPIO_INVERT_B_SIGNALS
     return !PINA & (1 << 1);
 #else
@@ -18,7 +18,7 @@ bool GPIO::B1isActive() {
 #endif
 }
 
-bool GPIO::B2isActive() {
+bool GPIO::B2() {
 #ifdef GPIO_INVERT_B_SIGNALS
     return !PINA & (1 << 2);
 #else
@@ -26,7 +26,7 @@ bool GPIO::B2isActive() {
 #endif
 }
 
-bool GPIO::B3isActive() {
+bool GPIO::B3() {
 #ifdef GPIO_INVERT_B_SIGNALS
     return !PINA & (1 << 3);
 #else
@@ -34,7 +34,7 @@ bool GPIO::B3isActive() {
 #endif
 }
 
-bool GPIO::B4isActive() {
+bool GPIO::B4() {
 #ifdef GPIO_INVERT_B_SIGNALS
     return !PINA & (1 << 4);
 #else
@@ -42,7 +42,7 @@ bool GPIO::B4isActive() {
 #endif
 }
 
-bool GPIO::A7isActive() {
+bool GPIO::A7() {
     return PINA & (1 << 5); // A7 is not inverted
 }
 
