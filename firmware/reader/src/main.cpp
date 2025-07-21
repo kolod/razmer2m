@@ -1,12 +1,22 @@
+#include <Arduino.h>
+
 #include "config.h"
 #include "modules/app/interface.h"
-#include "modules.h"
+
+
+Buffer buffern;
+Buffer *buffer = &buffern;
 
 void setup() {
-	app_begin();
+	delay(START_DELAY_MS);
+	gpio_begin();
+	serial_begin(CONNECTION_UART_BAUD_RATE, CONNECTION_UART_DPS);
+	reader_begin();
+	writer_begin();
+	buffer_begin(buffer);
 }
 
 void loop() {
-	app_run();
+	reader_run(buffer);
+	writer_run(buffer);
 }
-
