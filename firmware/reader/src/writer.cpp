@@ -10,30 +10,36 @@ Writer::Writer() : wSign(0), currentState(StateIdle), busyTimer(Timer()) {
 
 void Writer::begin() {
     busyTimer.reset();
-    currentState = StateWaitData;
+    state = WriterState::WaitData;
 }
 
 void Writer::run(Buffer *buffer) {
-    bool shouldYield = false;
     busyTimer.reset();
+    bool shouldYield = false;
 
     while (!busyTimer.isExpired() && !shouldYield) {
-        switch (currentState) {
-            case StateIdle:
+        switch (state) {
+            case WriterState::WaitData:
+                if (!buffer->lockForReading()) return;
+                state = WriterState::StartSign;
                 break;
-            case StateWaitData:
-                shouldYield = writeDataWaitData(buffer);
+                
+            case WriterState::GetNextSign:
+                state = (!buffer->readNext(&wSign)) ? WriterState::WriteStopSign : WriterState::WriteStartSign;
                 break;
-            case StateGetNextSign:
-                shouldYield = writeDataGetNextSign(buffer);
+
+            case WriterState::WriteStartSign:
+                wSign = CONNECTION_PACKAGE_DELIMITER_START;
+                if (Serial.availableForWrite()) {
+                    Serial.write((char*) wSign, 1);
+                    state = WriterState::GetNextSign;
+                }
                 break;
-            case StateWriteStartSign:
-                shouldYield = writeDataWriteStartSign(buffer);
-                break;
-            case StateWriteSigns:
+                
+            case WriterState::WriteSigns:
                 shouldYield = writeDataWriteSigns(buffer);
                 break;
-            case StateWriteStopSign:
+            case WriterState::WriteStopSign:
                 shouldYield = writeDataWriteStopSign(buffer);
         }
     }
@@ -45,16 +51,16 @@ bool Writer::writeDataWaitData(Buffer *buffer) {
     if (buffer_lockForReading(buffer) != RESULT_SUCCESS)
         return true;
     
-    currentState = StateWriteStartSign;
+    state = WriterState::StartSign;
     return false;
 }
 
 bool Writer::writeDataGetNextSign(Buffer *buffer) {
     if (buffer_readNext(buffer, &wSign) != RESULT_SUCCESS) {
-        currentState = StateWriteStopSign;
+        currentState = WriterState::WriteStopSign;
         return false;
     }
-    currentState = StateWriteSigns;
+    state = WriterState::Signs;
     return false;
 }
 
@@ -63,7 +69,7 @@ bool Writer::writeDataWriteStartSign(Buffer *buffer) {
     if (serial_writeByte(&wSign) != RESULT_SUCCESS) {
         return false;
     }
-    currentState = StateGetNextSign;
+    state = WriterState::GetNextSign;
     return false;
 }
 
@@ -71,7 +77,7 @@ bool Writer::writeDataWriteSigns(Buffer *buffer) {
     if (serial_writeByte(&wSign) != RESULT_SUCCESS) {
         return false;
     }
-    currentState = StateGetNextSign;
+    state = WriterState::GetNextSign;
     return false;
 }
 
@@ -81,7 +87,7 @@ bool Writer::writeDataWriteStopSign(Buffer *buffer) {
         return false;
     }
     buffer_unlockForReading(buffer);
-    currentState = StateWaitData;
+    state = WriterState::WaitData;
     return true;
 }
 

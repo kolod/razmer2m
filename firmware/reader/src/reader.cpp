@@ -1,6 +1,6 @@
 
 #include "reader.h"
-
+#include "data.h"
 
 Reader::Reader() : state(ReaderState::A7NotActive), count(0) {
 	errorTimer.setInterval(READER_TIMEOUT_MS);

@@ -2,9 +2,9 @@
 
 #include <Arduino.h>
 #include "gpio.h"
-#include "buffer.h"
 #include "timer.h"
 #include "config.h"
+
 
 class Reader {
 public:
@@ -30,6 +30,7 @@ private:
 
     ReadState state;
     uint8_t count;
+
 
     void writeCode(Buffer *buffer);
     void setError(Buffer *buffer);

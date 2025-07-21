@@ -12,17 +12,16 @@ public:
     void run(Buffer *buffer);
 
 private:
-    enum WriteState {
-        StateIdle,
-        StateWaitData,
-        StateGetNextSign,
-        StateWriteStartSign,
-        StateWriteSigns,
-        StateWriteStopSign
+    enum class WriterState {
+        WaitData,
+        GetNextSign,
+        WriteStartSign,
+        WriteSigns,
+        WriteStopSign
     };
 
     uint8_t wSign;
-    WriteState currentState;
+    WriterState state;
     MicrosTimer busyTimer;
 
     // State machine methods
