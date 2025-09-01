@@ -156,6 +156,7 @@ class QEMUTestRunner {
         if (!connected) return "";
 
         // Set socket to non-blocking
+
 #ifdef _WIN32
         u_long mode = 1;
         ioctlsocket(sock, FIONBIO, &mode);
@@ -188,12 +189,10 @@ class QEMUTestRunner {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
-        // Set socket back to blocking
 #ifdef _WIN32
-        u_long mode = 0;
+        mode = 0;
         ioctlsocket(sock, FIONBIO, &mode);
 #else
-        int flags = fcntl(sock, F_GETFL, 0);
         fcntl(sock, F_SETFL, flags & ~O_NONBLOCK);
 #endif
 
