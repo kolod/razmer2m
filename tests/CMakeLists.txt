@@ -55,6 +55,17 @@ if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
         target_link_libraries(test_format_runner ws2_32)
     endif()
     add_test(NAME FormatAVRTest COMMAND test_format_runner)
+
+    # Add timeout configuration for AVR tests
+    set_tests_properties(FormatAVRTest PROPERTIES 
+        TIMEOUT 180 # 3 minutes
+        LABELS "avr;slow"
+    )
+
+    # For faster development, allow skipping slow tests
+    if(DEFINED ENV{SKIP_SLOW_TESTS})
+        set_tests_properties(FormatAVRTest PROPERTIES DISABLED TRUE)
+    endif()
 endif()
 
 # For running all tests you must build avr tests firstly by using the 'tests-avr' preset
