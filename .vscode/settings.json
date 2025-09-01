@@ -1,0 +1,26 @@
+{
+    "testExplorer.testAdapters": [
+        "vscode-cmake-tools-test-adapter"
+    ],
+    "cmake.testPreset": "tests-gcc",
+    "cmake.debugConfig": {
+        "MIMode": "gdb",
+        "miDebuggerPath": "gdb.exe",
+        "sourceFileMap": {
+            "${workspaceFolder}": "${workspaceFolder}"
+        }
+    },
+    "files.associations": {
+        "compare": "cpp",
+        "cstdint": "cpp"
+    },
+    "C_Cpp.clang_format_fallbackStyle": "Google",
+    "C_Cpp.clang_format_style": "{ BasedOnStyle: Google, BreakBeforeBraces: Attach, IndentWidth: 4, TabWidth: 4, UseTab: Never, ColumnLimit: 120 }",
+    "editor.rulers": [
+        120
+    ],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file"
+}

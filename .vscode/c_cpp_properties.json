@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "AVR-GCC",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "C:/Tools/avr-gcc-15.1_2025-07-12_mingw32/avr/include"
+            ],
+            "defines": [
+                "__AVR_ATmega328P__",
+                "F_CPU=16000000UL",
+                "BAUDRATE=115200",
+                "EMULATOR"
+            ],
+            "compilerPath": "C:/Tools/avr-gcc-15.1_2025-07-12_mingw32/bin/avr-gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}

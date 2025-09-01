@@ -1,0 +1,167 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Kitware/CMake/refs/heads/master/Help/manual/presets/schema.json",
+    "version": 10,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 31,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "tests-gcc",
+            "displayName": "Configure Tests GCC",
+            "description": "Configure tests with GCC compiler in build/tests directory.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/tests",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "BUILD_FIRMWARE": "OFF",
+                "BUILD_TESTS": "ON",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "tests-avr",
+            "displayName": "Configure AVR Tests",
+            "description": "Configure AVR tests with AVR-GCC compiler in build/tests-avr directory.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/tests-avr",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/avr-gcc-toolchain.cmake",
+                "BUILD_FIRMWARE": "OFF",
+                "BUILD_TESTS": "ON",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "firmware",
+            "displayName": "Configure Firmware",
+            "description": "Configure firmware with AVR-GCC compiler in build/firmware directory.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/firmware",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/avr-gcc-toolchain.cmake",
+                "BUILD_FIRMWARE": "ON",
+                "BUILD_EMULATOR": "ON",
+                "BUILD_TRANSMITTER": "ON",
+                "BUILD_RECEIVER": "ON",
+                "BUILD_TESTS": "OFF",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "tests-gcc",
+            "displayName": "Build Tests GCC",
+            "description": "Build tests with GCC compiler in build/tests directory.",
+            "configurePreset": "tests-gcc"
+        },
+        {
+            "name": "tests-avr",
+            "displayName": "Build AVR Tests",
+            "description": "Build AVR tests with AVR-GCC compiler in build/tests-avr directory.",
+            "configurePreset": "tests-avr"
+        },
+        {
+            "name": "firmware",
+            "displayName": "Build Firmware",
+            "description": "Build firmware with AVR-GCC compiler in build/firmware directory.",
+            "configurePreset": "firmware"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "tests-gcc",
+            "displayName": "Run Tests GCC",
+            "description": "Run tests built with GCC compiler in build/tests directory.",
+            "configurePreset": "tests-gcc",
+            "output": {
+                "outputOnFailure": true,
+                "verbosity": "verbose"
+            },
+            "execution": {
+                "stopOnFailure": true,
+                "noTestsAction": "error",
+                "interactiveDebugging": true
+            },
+            "filter": {
+                "include": {
+                    "name": "FormatNativeTest"
+                }
+            }
+        },
+        {
+            "name": "tests-avr",
+            "displayName": "Run AVR Tests",
+            "description": "Run AVR tests in QEMU simulator.",
+            "configurePreset": "tests-gcc",
+            "output": {
+                "outputOnFailure": true,
+                "verbosity": "verbose"
+            },
+            "execution": {
+                "stopOnFailure": true,
+                "noTestsAction": "error",
+                "interactiveDebugging": true
+            },
+            "filter": {
+                "include": {
+                    "name": "FormatAVRTest"
+                }
+            }
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "tests-gcc",
+            "description": "Configure, build, and run tests with GCC.",
+            "displayName": "Test GCC",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "tests-gcc"
+                },
+                {
+                    "type": "build",
+                    "name": "tests-gcc"
+                },
+                {
+                    "type": "test",
+                    "name": "tests-gcc"
+                }
+            ]
+        },
+        {
+            "name": "tests-avr",
+            "description": "Configure, build AVR tests, and run them in QEMU.",
+            "displayName": "Test AVR",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "tests-avr"
+                },
+                {
+                    "type": "build",
+                    "name": "tests-avr"
+                }
+            ]
+        },
+        {
+            "name": "firmware",
+            "displayName": "Build Firmware",
+            "description": "Build firmware with AVR-GCC compiler in build/firmware directory.",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "firmware"
+                },
+                {
+                    "type": "build",
+                    "name": "firmware"
+                }
+            ]
+        }
+    ]
+}
