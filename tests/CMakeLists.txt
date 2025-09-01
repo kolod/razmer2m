@@ -38,6 +38,11 @@ endif()
 if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
     FetchContent_MakeAvailable(googletest)
 
+    # Enforce C++17 for native tests
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+
     # Native tests
     add_executable(test_format_native test_format_native.cpp)
     target_link_libraries(test_format_native gtest_main)
