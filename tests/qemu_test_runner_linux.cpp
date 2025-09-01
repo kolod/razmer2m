@@ -115,6 +115,10 @@ bool QEMUTestRunner::acceptConnection() {
     // Wait for hello from AVR
     std::cout << "Waiting for hello from AVR..." << std::endl;
     std::string response = receiveResponse(10000);
+
+    // Strip trailing CR/LF
+    response.erase(response.find_last_not_of("\r\n") + 1);
+
     std::cout << "Received: '" << response << "'" << std::endl;
 
     if (response.find("hello") != std::string::npos) {
