@@ -176,7 +176,7 @@ int main() {
     uart_init();
 
     // Send hello after startup delay
-    _delay_ms(1000);  // Wait 1 second for things to settle
+    _delay_ms(100);  // Wait 100 milliseconds for things to settle
     uart_puts("hello\n");
 
     // Main command loop
