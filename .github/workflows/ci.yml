@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: 
+    - main
+    - develop
+  pull_request:
+    branches: 
+    - main
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Remove existing CMake
+      run: sudo apt-get remove --purge cmake
+
+    - name: Download and install CMake 3.31
+      run: |        
+        wget https://github.com/Kitware/CMake/releases/download/v3.31.3/cmake-3.31.3-linux-x86_64.tar.gz
+        tar -xzf cmake-3.31.3-linux-x86_64.tar.gz
+        sudo mv cmake-3.31.3-linux-x86_64 /opt/cmake
+        sudo ln -sf /opt/cmake/bin/cmake /usr/local/bin/cmake
+        sudo ln -sf /opt/cmake/bin/ctest /usr/local/bin/ctest
+
+    - name: Add cmake to PATH
+      run: echo "/opt/cmake/bin" | sudo tee -a /etc/ld.so.conf.d/cmake.conf
+
+    - name: Update package list
+      run: sudo apt-get update
+
+    - name: Install Ninja
+      run: sudo apt-get install -y ninja-build
+
+    - name: Install GCC
+      run: sudo apt-get install -y build-essential gcc g++
+
+    - name: Install AVR-GCC toolchain
+      run: sudo apt-get install -y gcc-avr binutils-avr avr-libc
+
+    - name: Install QEMU
+      run: sudo apt-get install -y qemu-system-avr
+
+    - name: Print tool versions
+      run: |
+        echo "=== Tool Versions ==="
+        cmake --version
+        ninja --version
+        gcc --version
+        avr-gcc --version
+        qemu-system-avr --version
+        echo "====================="
+
+    - name: Configure native tests
+      run: cmake --preset tests-gcc
+
+    - name: Build native tests
+      run: cmake --build --preset tests-gcc
+
+    - name: Run native tests
+      working-directory: build/tests
+      run: ctest --verbose
+
+    - name: Configure AVR tests
+      run: cmake --preset tests-avr
+
+    - name: Build AVR tests
+      run: cmake --build --preset tests-avr
+
+    - name: Configure test runner
+      run: cmake --preset tests-avr --target test_runner
+
+    - name: Build test runner
+      run: cmake --build --preset tests-avr --target test_runner
+
+    - name: Run AVR tests under QEMU
+      working-directory: build/tests-avr-runner
+      run: ctest --verbose
+
+    - name: Configure firmware
+      run: cmake --preset firmware
+
+    - name: Build firmware
+      run: cmake --build build/firmware
+
+    - name: Store firmware binaries as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: firmware-hex-files
+        path: |
+          build/firmware/*.hex
+        retention-days: 30
+        if-no-files-found: error

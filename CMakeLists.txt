@@ -14,7 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.31)
 project(razmer2m 
     VERSION 1.0 
     DESCRIPTION "A hardware and software system for replacing a cathode ray tube indicator with an LED display for machine tools equipped with a numerical control device (NCU) \"Razmer 2M 1104\"."
