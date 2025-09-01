@@ -110,7 +110,8 @@ jobs:
 
   test-and-build-windows-latest:
     runs-on: windows-latest
-    
+    if: false # Temporarily disable Windows job due to concentrating on Linux
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4

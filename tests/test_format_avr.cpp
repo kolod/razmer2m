@@ -51,7 +51,7 @@ void uart_putchar(char c) {
     // Wait for empty transmit buffer
     while (!(UCSR0A & (1 << UDRE0)));
     // Send data
-    UDR0 = c;
+    UDR0 = static_cast<uint8_t>(c);
 }
 
 // Receive character from UART (non-blocking)
@@ -70,7 +70,7 @@ void uart_puts(const char* str) {
 }
 
 // Parse comma-separated values into array
-int parse_values(const char* str, int64_t* values, size_t max_values) {
+size_t parse_values(const char* str, int64_t* values, size_t max_values) {
     size_t count = 0;
     const char* ptr = str;
 
@@ -139,7 +139,7 @@ void process_command(const char* cmd) {
         if (*ptr == ',') ptr++;
 
         // Parse values
-        int value_count = parse_values(ptr, values, axis_count);
+        auto value_count = parse_values(ptr, values, axis_count);
 
         if (value_count >= axis_count) {
             // Call format function based on parameters

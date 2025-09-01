@@ -30,7 +30,7 @@ if(CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "avr-gcc")
     # AVR test application (for QEMU)
     add_executable(test_format_avr test_format_avr.cpp)
     target_compile_definitions(test_format_avr PRIVATE __AVR_ATmega328P__ F_CPU=16000000UL)
-    target_compile_options(test_format_avr PRIVATE -mmcu=atmega328p)
+    target_compile_options(test_format_avr PRIVATE -mmcu=atmega328p -Os)
     target_link_options(test_format_avr PRIVATE -mmcu=atmega328p)
 endif()
 
