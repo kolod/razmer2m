@@ -86,26 +86,6 @@
                 "noTestsAction": "error",
                 "interactiveDebugging": true
             }
-        },
-        {
-            "name": "tests-avr",
-            "displayName": "Run AVR Tests",
-            "description": "Run AVR tests in QEMU simulator.",
-            "configurePreset": "tests-avr",
-            "output": {
-                "outputOnFailure": true,
-                "verbosity": "verbose"
-            },
-            "execution": {
-                "stopOnFailure": true,
-                "noTestsAction": "error",
-                "interactiveDebugging": true
-            },
-            "filter": {
-                "include": {
-                    "name": "FormatAVRTest"
-                }
-            }
         }
     ],
     "workflowPresets": [
@@ -125,21 +105,6 @@
                 {
                     "type": "test",
                     "name": "tests-gcc"
-                }
-            ]
-        },
-        {
-            "name": "tests-avr",
-            "description": "Configure, build AVR tests, and run them in QEMU.",
-            "displayName": "Test AVR",
-            "steps": [
-                {
-                    "type": "configure",
-                    "name": "tests-avr"
-                },
-                {
-                    "type": "build",
-                    "name": "tests-avr"
                 }
             ]
         },

@@ -18,10 +18,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Cache CMake
+      id: cmake-cache
+      uses: actions/cache@v4
+      with:
+        path: /opt/cmake
+        key: cmake-3.31.3-linux-x86_64
+
     - name: Remove existing CMake
       run: sudo apt-get remove --purge cmake
 
     - name: Download and install CMake 3.31
+      if: steps.cmake-cache.outputs.cache-hit != 'true'
       run: |        
         wget https://github.com/Kitware/CMake/releases/download/v3.31.3/cmake-3.31.3-linux-x86_64.tar.gz
         tar -xzf cmake-3.31.3-linux-x86_64.tar.gz
@@ -36,7 +44,15 @@ jobs:
     - name: Install GCC
       run: sudo apt-get install -y build-essential gcc g++
 
+    - name: Cache AVR-GCC toolchain
+      id: avr-gcc-cache
+      uses: actions/cache@v4
+      with:
+        path: /opt/avr-gcc
+        key: avr-gcc-15.2.0-x64-linux
+
     - name: Install AVR-GCC 15.2.0 toolchain
+      if: steps.avr-gcc-cache.outputs.cache-hit != 'true'
       run: |
         wget https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x64-linux.tar.bz2
         tar -xjf avr-gcc-15.2.0-x64-linux.tar.bz2
@@ -49,9 +65,6 @@ jobs:
       run: |
         echo "/opt/cmake/bin" >> $GITHUB_PATH
         echo "/opt/avr-gcc/bin" >> $GITHUB_PATH
-
-    - name: Set AVR toolchain environment
-      run: echo "AVR_TOOLCHAIN_ROOT=/opt/avr-gcc" >> $GITHUB_ENV
 
     - name: Print tool versions
       run: |
