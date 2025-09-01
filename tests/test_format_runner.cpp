@@ -82,7 +82,9 @@ class QEMUTestRunner {
 
         // Start QEMU with the AVR test
         std::string cmd = "qemu-system-avr -machine arduino-uno -bios " + avr_binary +
-                          " -nographic -serial telnet:localhost:1234,server,nowait";
+                          " -nographic -monitor none -serial tcp:localhost:1234,server,nowait";
+
+        std::cout << "Starting QEMU with command: " << cmd << std::endl;
 
 #ifdef _WIN32
         STARTUPINFOA si = {0};
@@ -111,19 +113,24 @@ class QEMUTestRunner {
 #endif
 
         // Wait for QEMU to start
-        std::this_thread::sleep_for(std::chrono::seconds(3));
+        std::cout << "Waiting for QEMU to start..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(5));
 
         return true;
     }
 
     bool connectToQEMU() {
+        std::cout << "Attempting to connect to QEMU on localhost:1234..." << std::endl;
+
         sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 #ifdef _WIN32
         if (sock == INVALID_SOCKET) {
+            std::cerr << "Failed to create socket" << std::endl;
             return false;
         }
 #else
         if (sock < 0) {
+            std::cerr << "Failed to create socket" << std::endl;
             return false;
         }
 #endif
@@ -138,9 +145,11 @@ class QEMUTestRunner {
 #endif
 
         // Try to connect with retries
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
+            std::cout << "Connection attempt " << (i + 1) << "/20..." << std::endl;
             if (connect(sock, (sockaddr*)&addr, sizeof(addr)) == 0) {
                 connected = true;
+                std::cout << "Successfully connected to QEMU!" << std::endl;
 
                 // Wait for ready message
                 std::string response = receiveResponse(5000);
@@ -149,9 +158,12 @@ class QEMUTestRunner {
                 }
                 break;
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+            std::cout << "Connection failed, waiting 1 second before retry..." << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
+        std::cerr << "Failed to connect to QEMU after 20 attempts" << std::endl;
         return false;
     }
 
