@@ -49,14 +49,16 @@ if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
     add_test(NAME FormatNativeTest COMMAND test_format_native)
     
     # AVR tests under QEMU
-    add_executable(test_format_runner test_format_runner.cpp)
-    target_link_libraries(test_format_runner gtest_main)
     if(WIN32)
-        target_link_libraries(test_format_runner ws2_32)
+        add_executable(qemu_test_runner qemu_test_runner_windows.cpp test_format_runner.cpp)
+        target_link_libraries(qemu_test_runner ws2_32 gtest_main)
+    else()
+        add_executable(qemu_test_runner qemu_test_runner_linux.cpp test_format_runner.cpp)
+        target_link_libraries(qemu_test_runner pthread gtest_main)
     endif()
-    add_test(NAME FormatAVRTest COMMAND test_format_runner)
 
-    # Add timeout configuration for AVR tests
+    target_include_directories(qemu_test_runner PRIVATE ".")
+    add_test(NAME FormatAVRTest COMMAND test_format_runner)
     set_tests_properties(FormatAVRTest PROPERTIES 
         TIMEOUT 180 # 3 minutes
         LABELS "avr;slow"
@@ -67,12 +69,3 @@ if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
         set_tests_properties(FormatAVRTest PROPERTIES DISABLED TRUE)
     endif()
 endif()
-
-# For running all tests you must build avr tests firstly by using the 'tests-avr' preset
-# Then you can run the tests using the 'tests-gcc' preset
-# Note that AVR tests require QEMU to run
-# cmake --preset tests-avr
-# cmake --build --preset tests-avr
-# cmake --preset tests-gcc
-# cmake --build --preset tests-gcc
-# cd build/tests-gcc && ctest

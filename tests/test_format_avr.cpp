@@ -166,8 +166,8 @@ void process_command(const char* cmd) {
         } else {
             uart_puts("ERROR:Invalid parameter count\n");
         }
-    } else if (strcmp(cmd, "PING") == 0) {
-        uart_puts("PONG\n");
+    } else if (strcmp(cmd, "hello") == 0) {
+        uart_puts("hello\n");
     } else if (strcmp(cmd, "READY") == 0) {
         uart_puts("AVR_TEST_READY\n");
     } else {
@@ -179,32 +179,11 @@ int main() {
     // Initialize UART
     uart_init();
 
-    // Wait for initial handshake from test runner
-    while (1) {
-        int c = uart_getchar();
-        if (c >= 0) {
-            char ch = (char)c;
-            if (ch == '\n' || ch == '\r') {
-                // End of command
-                if (cmd_index > 0) {
-                    cmd_buffer[cmd_index] = '\0';
+    // Send hello after startup delay
+    _delay_ms(1000);  // Wait 1 second for things to settle
+    uart_puts("hello\n");
 
-                    // Check for handshake command
-                    if (strcmp(cmd_buffer, "PING") == 0) {
-                        uart_puts("PONG\n");
-                        cmd_index = 0;
-                        break;  // Exit handshake, start normal operation
-                    }
-
-                    cmd_index = 0;
-                }
-            } else if (cmd_index < CMD_BUFFER_SIZE - 1) {
-                cmd_buffer[cmd_index++] = ch;
-            }
-        }
-    }
-
-    // Main loop
+    // Main command loop
     while (1) {
         int c = uart_getchar();
 
