@@ -72,7 +72,7 @@ class QEMUTestRunner {
         std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
 
         // AVR binary file
-        std::string avr_binary = "../tests-avr/tests/test_format_avr";
+        std::string avr_binary = "../../tests-avr/tests/test_format_avr";
 
         // Check if the AVR binary file exists
         if (!std::filesystem::exists(avr_binary)) {
