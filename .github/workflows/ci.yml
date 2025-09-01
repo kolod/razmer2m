@@ -57,30 +57,20 @@ jobs:
         qemu-system-avr --version
         echo "====================="
 
-    - name: Configure native tests
-      run: cmake --preset tests-gcc
-
-    - name: Build native tests
-      run: cmake --build --preset tests-gcc
-
-    - name: Run native tests
-      working-directory: build/tests
-      run: ctest --verbose
-
     - name: Configure AVR tests
       run: cmake --preset tests-avr
 
     - name: Build AVR tests
       run: cmake --build --preset tests-avr
 
-    - name: Configure test runner
-      run: cmake --preset tests-avr --target test_runner
+    - name: Configure native tests
+      run: cmake --preset tests-gcc
 
-    - name: Build test runner
-      run: cmake --build --preset tests-avr --target test_runner
+    - name: Build native tests
+      run: cmake --build --preset tests-gcc
 
-    - name: Run AVR tests under QEMU
-      working-directory: build/tests-avr-runner
+    - name: Run all tests
+      working-directory: build/tests-gcc
       run: ctest --verbose
 
     - name: Configure firmware

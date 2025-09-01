@@ -12,21 +12,7 @@
             "displayName": "Configure Tests GCC",
             "description": "Configure tests with GCC compiler in build/tests directory.",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/tests-native",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc",
-                "CMAKE_CXX_COMPILER": "g++",
-                "BUILD_FIRMWARE": "OFF",
-                "BUILD_TESTS": "ON",
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "tests-avr-runner",
-            "displayName": "Configure Tests AVR Runner",
-            "description": "Configure avr tests runner with AVR-GCC compiler in build/tests-avr-runner directory.",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/tests-avr-runner",
+            "binaryDir": "${sourceDir}/build/tests-gcc",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "gcc",
                 "CMAKE_CXX_COMPILER": "g++",
@@ -73,12 +59,6 @@
             "configurePreset": "tests-gcc"
         },
         {
-            "name": "tests-avr-runner",
-            "displayName": "Build Tests AVR Runner",
-            "description": "Build avr tests runner with AVR-GCC compiler in build/tests-avr-runner directory.",
-            "configurePreset": "tests-avr-runner"
-        },
-        {
             "name": "tests-avr",
             "displayName": "Build AVR Tests",
             "description": "Build AVR tests with AVR-GCC compiler in build/tests-avr directory.",
@@ -105,11 +85,6 @@
                 "stopOnFailure": true,
                 "noTestsAction": "error",
                 "interactiveDebugging": true
-            },
-            "filter": {
-                "include": {
-                    "name": "FormatNativeTest"
-                }
             }
         },
         {

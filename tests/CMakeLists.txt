@@ -16,6 +16,7 @@
 
 include(FetchContent)
 
+# Get GoogleTest
 FetchContent_Declare(
 	googletest
 	GIT_REPOSITORY https://github.com/google/googletest.git
@@ -23,21 +24,23 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-# Native tests
-add_executable(test_format_native test_format_native.cpp)
-target_link_libraries(test_format_native gtest_main)
-add_test(NAME FormatNativeTest COMMAND test_format_native)
-
-# AVR test application (for QEMU)
+# If cross-compiling for AVR
 if(CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "avr-gcc")
+    # AVR test application (for QEMU)
     add_executable(test_format_avr test_format_avr.cpp)
     target_compile_definitions(test_format_avr PRIVATE __AVR_ATmega328P__ F_CPU=16000000UL)
     target_compile_options(test_format_avr PRIVATE -mmcu=atmega328p)
     target_link_options(test_format_avr PRIVATE -mmcu=atmega328p)
 endif()
 
-# Test runner (runs AVR tests in QEMU)
-if(NOT CMAKE_CROSSCOMPILING)
+# If running with GCC
+if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
+    # Native tests
+    add_executable(test_format_native test_format_native.cpp)
+    target_link_libraries(test_format_native gtest_main)
+    add_test(NAME FormatNativeTest COMMAND test_format_native)
+    
+    # AVR tests under QEMU
     add_executable(test_format_runner test_format_runner.cpp)
     target_link_libraries(test_format_runner gtest_main)
     if(WIN32)
@@ -45,3 +48,12 @@ if(NOT CMAKE_CROSSCOMPILING)
     endif()
     add_test(NAME FormatAVRTest COMMAND test_format_runner)
 endif()
+
+# For running all tests you must build avr tests firstly by using the 'tests-avr' preset
+# Then you can run the tests using the 'tests-gcc' preset
+# Note that AVR tests require QEMU to run
+# cmake --preset tests-avr
+# cmake --build --preset tests-avr
+# cmake --preset tests-gcc
+# cmake --build --preset tests-gcc
+# cd build/tests-gcc && ctest
