@@ -26,11 +26,6 @@ jobs:
         wget https://github.com/Kitware/CMake/releases/download/v3.31.3/cmake-3.31.3-linux-x86_64.tar.gz
         tar -xzf cmake-3.31.3-linux-x86_64.tar.gz
         sudo mv cmake-3.31.3-linux-x86_64 /opt/cmake
-        sudo ln -sf /opt/cmake/bin/cmake /usr/local/bin/cmake
-        sudo ln -sf /opt/cmake/bin/ctest /usr/local/bin/ctest
-
-    - name: Add cmake to PATH
-      run: echo "/opt/cmake/bin" | sudo tee -a /etc/ld.so.conf.d/cmake.conf
 
     - name: Update package list
       run: sudo apt-get update
@@ -41,11 +36,19 @@ jobs:
     - name: Install GCC
       run: sudo apt-get install -y build-essential gcc g++
 
-    - name: Install AVR-GCC toolchain
-      run: sudo apt-get install -y gcc-avr binutils-avr avr-libc
+    - name: Install AVR-GCC 15.2.0 toolchain
+      run: |
+        wget https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x64-linux.tar.bz2
+        tar -xjf avr-gcc-15.2.0-x64-linux.tar.bz2
+        sudo mv avr-gcc-15.2.0-x64-linux /opt/avr-gcc-15.2.0
 
     - name: Install QEMU
       run: sudo apt-get install -y qemu-system-avr
+
+    - name: Add CMAKE & AVR-GCC to PATH
+      run: |
+        echo "/opt/cmake/bin" >> $GITHUB_PATH
+        echo "/opt/avr-gcc-15.1.0/bin" >> $GITHUB_PATH
 
     - name: Print tool versions
       run: |
