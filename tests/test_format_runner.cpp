@@ -82,7 +82,7 @@ class QEMUTestRunner {
 
         // Start QEMU with the AVR test
         std::string cmd = "qemu-system-avr -machine arduino-uno -bios " + avr_binary +
-                          " -nographic -monitor none -serial tcp:localhost:1234,server,nowait";
+                          " -nographic -no-shutdown -no-reboot -serial tcp:localhost:1234,server,nowait";
 
         std::cout << "Starting QEMU with command: " << cmd << std::endl;
 
@@ -252,14 +252,20 @@ class QEMUTestRunner {
             kill(qemu_process, SIGTERM);
 
             // Wait a bit for graceful shutdown
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
             // Force kill if still running
             int status;
             if (waitpid(qemu_process, &status, WNOHANG) == 0) {
                 std::cout << "QEMU didn't terminate gracefully, force killing..." << std::endl;
                 kill(qemu_process, SIGKILL);
-                waitpid(qemu_process, &status, 0);
+                if (waitpid(qemu_process, &status, WNOHANG) == 0) {
+                    // If still not cleaned up, just abandon it
+                    std::cout << "Warning: QEMU process may still be running" << std::endl;
+                    // Kill all qemu processes
+                    system("pkill qemu-system-avr");
+                    system("pkill qemu");
+                }
             }
 
             qemu_process = 0;
