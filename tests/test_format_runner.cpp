@@ -138,11 +138,7 @@ class QEMUTestRunner {
         sockaddr_in addr;
         addr.sin_family = AF_INET;
         addr.sin_port = htons(1234);
-#ifdef _WIN32
         inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr);
-#else
-        inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr);
-#endif
 
         // Try to connect with retries
         for (int i = 0; i < 20; i++) {
@@ -231,6 +227,8 @@ class QEMUTestRunner {
     }
 
     void cleanup() {
+        std::cout << "Cleaning up QEMU and connections..." << std::endl;
+
 #ifdef _WIN32
         if (connected && sock != INVALID_SOCKET) {
             closesocket(sock);
@@ -250,9 +248,22 @@ class QEMUTestRunner {
         }
 
         if (qemu_process > 0) {
+            std::cout << "Terminating QEMU process " << qemu_process << std::endl;
             kill(qemu_process, SIGTERM);
-            waitpid(qemu_process, nullptr, 0);
+
+            // Wait a bit for graceful shutdown
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+            // Force kill if still running
+            int status;
+            if (waitpid(qemu_process, &status, WNOHANG) == 0) {
+                std::cout << "QEMU didn't terminate gracefully, force killing..." << std::endl;
+                kill(qemu_process, SIGKILL);
+                waitpid(qemu_process, &status, 0);
+            }
+
             qemu_process = 0;
+            std::cout << "QEMU process terminated" << std::endl;
         }
 #endif
     }
