@@ -57,87 +57,85 @@ int QEMUTestRunner::findFreePort(int start_port, int end_port) {
 }
 
 bool QEMUTestRunner::createListeningSockets() {
-    bool QEMUTestRunner::createListeningSockets() {
-        std::cout << "Creating listening socket on port 1234..." << std::endl;
+    std::cout << "Creating listening socket on port 1234..." << std::endl;
 
-        // Create serial listening socket
-        listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (listen_sock < 0) {
-            std::cerr << "Failed to create listening socket" << std::endl;
-            return false;
-        }
-
-        // Allow socket reuse
-        int opt = 1;
-        setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-        sockaddr_in addr;
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(1234);
-        addr.sin_addr.s_addr = INADDR_ANY;
-
-        if (bind(listen_sock, (sockaddr*)&addr, sizeof(addr)) != 0) {
-            std::cerr << "Failed to bind to port 1234" << std::endl;
-            close(listen_sock);
-            listen_sock = -1;
-            return false;
-        }
-
-        if (listen(listen_sock, 1) != 0) {
-            std::cerr << "Failed to listen on port 1234" << std::endl;
-            close(listen_sock);
-            listen_sock = -1;
-            return false;
-        }
-
-        // Find free port for monitor
-        monitor_port = findFreePort(1000, 65535);
-        if (monitor_port == -1) {
-            std::cerr << "Failed to find free port for monitor" << std::endl;
-            close(listen_sock);
-            listen_sock = -1;
-            return false;
-        }
-
-        std::cout << "Creating monitor listening socket on port " << monitor_port << "..." << std::endl;
-
-        // Create monitor listening socket
-        monitor_listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (monitor_listen_sock < 0) {
-            std::cerr << "Failed to create monitor listening socket" << std::endl;
-            close(listen_sock);
-            listen_sock = -1;
-            return false;
-        }
-
-        setsockopt(monitor_listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-        sockaddr_in monitor_addr;
-        monitor_addr.sin_family = AF_INET;
-        monitor_addr.sin_port = htons(monitor_port);
-        monitor_addr.sin_addr.s_addr = INADDR_ANY;
-
-        if (bind(monitor_listen_sock, (sockaddr*)&monitor_addr, sizeof(monitor_addr)) != 0) {
-            std::cerr << "Failed to bind monitor to port " << monitor_port << std::endl;
-            close(listen_sock);
-            close(monitor_listen_sock);
-            listen_sock = -1;
-            monitor_listen_sock = -1;
-            return false;
-        }
-
-        if (listen(monitor_listen_sock, 1) != 0) {
-            std::cerr << "Failed to listen on monitor port " << monitor_port << std::endl;
-            close(listen_sock);
-            close(monitor_listen_sock);
-            listen_sock = -1;
-            monitor_listen_sock = -1;
-            return false;
-        }
-
-        std::cout << "Listening sockets ready on ports 1234 (serial) and " << monitor_port << " (monitor)" << std::endl;
-        return true;
+    // Create serial listening socket
+    listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (listen_sock < 0) {
+        std::cerr << "Failed to create listening socket" << std::endl;
+        return false;
     }
+
+    // Allow socket reuse
+    int opt = 1;
+    setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(1234);
+    addr.sin_addr.s_addr = INADDR_ANY;
+
+    if (bind(listen_sock, (sockaddr*)&addr, sizeof(addr)) != 0) {
+        std::cerr << "Failed to bind to port 1234" << std::endl;
+        close(listen_sock);
+        listen_sock = -1;
+        return false;
+    }
+
+    if (listen(listen_sock, 1) != 0) {
+        std::cerr << "Failed to listen on port 1234" << std::endl;
+        close(listen_sock);
+        listen_sock = -1;
+        return false;
+    }
+
+    // Find free port for monitor
+    monitor_port = findFreePort(1000, 65535);
+    if (monitor_port == -1) {
+        std::cerr << "Failed to find free port for monitor" << std::endl;
+        close(listen_sock);
+        listen_sock = -1;
+        return false;
+    }
+
+    std::cout << "Creating monitor listening socket on port " << monitor_port << "..." << std::endl;
+
+    // Create monitor listening socket
+    monitor_listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (monitor_listen_sock < 0) {
+        std::cerr << "Failed to create monitor listening socket" << std::endl;
+        close(listen_sock);
+        listen_sock = -1;
+        return false;
+    }
+
+    setsockopt(monitor_listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    sockaddr_in monitor_addr;
+    monitor_addr.sin_family = AF_INET;
+    monitor_addr.sin_port = htons(monitor_port);
+    monitor_addr.sin_addr.s_addr = INADDR_ANY;
+
+    if (bind(monitor_listen_sock, (sockaddr*)&monitor_addr, sizeof(monitor_addr)) != 0) {
+        std::cerr << "Failed to bind monitor to port " << monitor_port << std::endl;
+        close(listen_sock);
+        close(monitor_listen_sock);
+        listen_sock = -1;
+        monitor_listen_sock = -1;
+        return false;
+    }
+
+    if (listen(monitor_listen_sock, 1) != 0) {
+        std::cerr << "Failed to listen on monitor port " << monitor_port << std::endl;
+        close(listen_sock);
+        close(monitor_listen_sock);
+        listen_sock = -1;
+        monitor_listen_sock = -1;
+        return false;
+    }
+
+    std::cout << "Listening sockets ready on ports 1234 (serial) and " << monitor_port << " (monitor)" << std::endl;
+    return true;
 }
 
 bool QEMUTestRunner::startQEMU(std::string avr_binary) {
