@@ -67,10 +67,21 @@ class QEMUTestRunner {
     }
 
     bool startQEMU() {
+        // Print ${CWD}
+        std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
+
+        // AVR binary file
+        std::string avr_binary = "../tests-avr/tests/test_format_avr";
+
+        // Check if the AVR binary file exists
+        if (!std::filesystem::exists(avr_binary)) {
+            std::cerr << "AVR binary file not found: " << avr_binary << std::endl;
+            return false;
+        }
+
         // Start QEMU with the AVR test
-        std::string cmd =
-            "qemu-system-avr -machine arduino-uno -bios ../build/tests-avr/test_format_avr.elf "
-            "-nographic -serial telnet:localhost:1234,server,nowait";
+        std::string cmd = "qemu-system-avr -machine arduino-uno -bios " + avr_binary +
+                          " -nographic -serial telnet:localhost:1234,server,nowait";
 
 #ifdef _WIN32
         STARTUPINFOA si = {0};
