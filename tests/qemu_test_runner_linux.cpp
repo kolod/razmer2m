@@ -146,8 +146,12 @@ bool QEMUTestRunner::startQEMU(std::string avr_binary) {
         return false;
     }
 
-    std::string cmd = "qemu-system-avr -machine uno -nographic -serial tcp:localhost:1234 -monitor tcp:localhost:" +
-                      std::to_string(monitor_port) + " -bios " + avr_binary;
+    std::string options = " -machine uno -nographic -monitor none";
+    std::string serial = " -serial tcp:localhost:1234,server";
+    std::string chardev = " -chardev socket,id=mon1,host=localhost,port=" + std::to_string(monitor_port);
+    std::string monitor = " -mon chardev=mon1";
+    std::string bios = " -bios " + avr_binary;
+    std::string cmd = "qemu-system-avr" + options + serial + chardev + monitor + bios;
 
     std::cout << "Starting QEMU with command: " << cmd << std::endl;
 
