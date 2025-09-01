@@ -50,15 +50,16 @@ class QEMUTestRunner {
     // Implementations typically wait a short period for the VM to boot.
     bool startQEMU(std::string avr_binary);
 
-    // Create listening socket on port 1234 and wait for QEMU to connect.
+    // Create listening sockets for serial (port 1234) and monitor communications.
+    // Finds a free port in range 1000-65535 for monitor.
     // Should be called before startQEMU().
-    // Returns true if socket is ready to accept connections.
-    bool createListeningSocket();
+    // Returns true if both sockets are ready to accept connections.
+    bool createListeningSockets();
 
-    // Accept connection from QEMU and perform hello handshake.
+    // Accept connections from QEMU for both serial and monitor.
     // Should be called after startQEMU().
-    // Returns true on successful connection and handshake.
-    bool acceptConnection();
+    // Returns true on successful connections and handshake.
+    bool acceptConnections();
 
     // Send a single-line command to the target (a trailing newline will be added if needed)
     // and return the first line of the response (up to and including the newline),
@@ -78,14 +79,22 @@ class QEMUTestRunner {
     void cleanup();
 
    private:
+    // Find a free port in the specified range
+    int findFreePort(int start_port, int end_port);
+
 #ifdef _WIN32
-    SOCKET listen_sock;  // Listening socket
-    SOCKET sock;         // Connected socket
+    SOCKET listen_sock;          // Serial listening socket (port 1234)
+    SOCKET sock;                 // Serial connected socket
+    SOCKET monitor_listen_sock;  // Monitor listening socket
+    SOCKET monitor_sock;         // Monitor connected socket
     HANDLE qemu_process;
 #else
-    int listen_sock;  // Listening socket
-    int sock;         // Connected socket
+    int listen_sock;          // Serial listening socket (port 1234)
+    int sock;                 // Serial connected socket
+    int monitor_listen_sock;  // Monitor listening socket
+    int monitor_sock;         // Monitor connected socket
     pid_t qemu_process;
 #endif
     bool connected;
+    int monitor_port;
 };

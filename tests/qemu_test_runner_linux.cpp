@@ -26,44 +26,118 @@
 
 #include "qemu_test_runner.h"
 
-QEMUTestRunner::QEMUTestRunner() : listen_sock(-1), sock(-1), qemu_process(0), connected(false) {}
+QEMUTestRunner::QEMUTestRunner()
+    : listen_sock(-1),
+      sock(-1),
+      monitor_listen_sock(-1),
+      monitor_sock(-1),
+      qemu_process(0),
+      connected(false),
+      monitor_port(0) {}
 
 QEMUTestRunner::~QEMUTestRunner() { cleanup(); }
 
-bool QEMUTestRunner::createListeningSocket() {
-    std::cout << "Creating listening socket on port 1234..." << std::endl;
+int QEMUTestRunner::findFreePort(int start_port, int end_port) {
+    for (int port = start_port; port <= end_port; port++) {
+        int test_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (test_sock < 0) continue;
 
-    listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (listen_sock < 0) {
-        std::cerr << "Failed to create listening socket" << std::endl;
-        return false;
+        sockaddr_in addr;
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(port);
+        addr.sin_addr.s_addr = INADDR_ANY;
+
+        if (bind(test_sock, (sockaddr*)&addr, sizeof(addr)) == 0) {
+            close(test_sock);
+            return port;
+        }
+        close(test_sock);
     }
+    return -1;  // No free port found
+}
 
-    // Allow socket reuse
-    int opt = 1;
-    setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+bool QEMUTestRunner::createListeningSockets() {
+    bool QEMUTestRunner::createListeningSockets() {
+        std::cout << "Creating listening socket on port 1234..." << std::endl;
 
-    sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(1234);
-    addr.sin_addr.s_addr = INADDR_ANY;
+        // Create serial listening socket
+        listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (listen_sock < 0) {
+            std::cerr << "Failed to create listening socket" << std::endl;
+            return false;
+        }
 
-    if (bind(listen_sock, (sockaddr*)&addr, sizeof(addr)) != 0) {
-        std::cerr << "Failed to bind to port 1234" << std::endl;
-        close(listen_sock);
-        listen_sock = -1;
-        return false;
+        // Allow socket reuse
+        int opt = 1;
+        setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+        sockaddr_in addr;
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(1234);
+        addr.sin_addr.s_addr = INADDR_ANY;
+
+        if (bind(listen_sock, (sockaddr*)&addr, sizeof(addr)) != 0) {
+            std::cerr << "Failed to bind to port 1234" << std::endl;
+            close(listen_sock);
+            listen_sock = -1;
+            return false;
+        }
+
+        if (listen(listen_sock, 1) != 0) {
+            std::cerr << "Failed to listen on port 1234" << std::endl;
+            close(listen_sock);
+            listen_sock = -1;
+            return false;
+        }
+
+        // Find free port for monitor
+        monitor_port = findFreePort(1000, 65535);
+        if (monitor_port == -1) {
+            std::cerr << "Failed to find free port for monitor" << std::endl;
+            close(listen_sock);
+            listen_sock = -1;
+            return false;
+        }
+
+        std::cout << "Creating monitor listening socket on port " << monitor_port << "..." << std::endl;
+
+        // Create monitor listening socket
+        monitor_listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (monitor_listen_sock < 0) {
+            std::cerr << "Failed to create monitor listening socket" << std::endl;
+            close(listen_sock);
+            listen_sock = -1;
+            return false;
+        }
+
+        setsockopt(monitor_listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+        sockaddr_in monitor_addr;
+        monitor_addr.sin_family = AF_INET;
+        monitor_addr.sin_port = htons(monitor_port);
+        monitor_addr.sin_addr.s_addr = INADDR_ANY;
+
+        if (bind(monitor_listen_sock, (sockaddr*)&monitor_addr, sizeof(monitor_addr)) != 0) {
+            std::cerr << "Failed to bind monitor to port " << monitor_port << std::endl;
+            close(listen_sock);
+            close(monitor_listen_sock);
+            listen_sock = -1;
+            monitor_listen_sock = -1;
+            return false;
+        }
+
+        if (listen(monitor_listen_sock, 1) != 0) {
+            std::cerr << "Failed to listen on monitor port " << monitor_port << std::endl;
+            close(listen_sock);
+            close(monitor_listen_sock);
+            listen_sock = -1;
+            monitor_listen_sock = -1;
+            return false;
+        }
+
+        std::cout << "Listening sockets ready on ports 1234 (serial) and " << monitor_port << " (monitor)" << std::endl;
+        return true;
     }
-
-    if (listen(listen_sock, 1) != 0) {
-        std::cerr << "Failed to listen on port 1234" << std::endl;
-        close(listen_sock);
-        listen_sock = -1;
-        return false;
-    }
-
-    std::cout << "Listening socket ready on port 1234" << std::endl;
-    return true;
 }
 
 bool QEMUTestRunner::startQEMU(std::string avr_binary) {
@@ -74,7 +148,8 @@ bool QEMUTestRunner::startQEMU(std::string avr_binary) {
         return false;
     }
 
-    std::string cmd = "qemu-system-avr -machine uno -nographic -serial tcp:localhost:1234 -bios " + avr_binary;
+    std::string cmd = "qemu-system-avr -machine uno -nographic -serial tcp:localhost:1234 -monitor tcp:localhost:" +
+                      std::to_string(monitor_port) + " -bios " + avr_binary;
 
     std::cout << "Starting QEMU with command: " << cmd << std::endl;
 
@@ -92,25 +167,60 @@ bool QEMUTestRunner::startQEMU(std::string avr_binary) {
     return true;
 }
 
-bool QEMUTestRunner::acceptConnection() {
+bool QEMUTestRunner::acceptConnections() {
     std::cout << "Waiting for QEMU to connect..." << std::endl;
 
-    if (listen_sock < 0) {
-        std::cerr << "No listening socket available" << std::endl;
+    if (listen_sock < 0 || monitor_listen_sock < 0) {
+        std::cerr << "No listening sockets available" << std::endl;
         return false;
     }
 
-    sockaddr_in client_addr;
-    socklen_t client_len = sizeof(client_addr);
-    sock = accept(listen_sock, (sockaddr*)&client_addr, &client_len);
+    // Set sockets to non-blocking to check both
+    int flags = fcntl(listen_sock, F_GETFL, 0);
+    fcntl(listen_sock, F_SETFL, flags | O_NONBLOCK);
+    int monitor_flags = fcntl(monitor_listen_sock, F_GETFL, 0);
+    fcntl(monitor_listen_sock, F_SETFL, monitor_flags | O_NONBLOCK);
 
-    if (sock < 0) {
-        std::cerr << "Failed to accept connection" << std::endl;
+    bool serial_connected = false;
+    bool monitor_connected = false;
+    auto start_time = std::chrono::steady_clock::now();
+
+    while ((!serial_connected || !monitor_connected) &&
+           std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count() <
+               30) {
+        if (!serial_connected) {
+            sockaddr_in client_addr;
+            socklen_t client_len = sizeof(client_addr);
+            sock = accept(listen_sock, (sockaddr*)&client_addr, &client_len);
+            if (sock >= 0) {
+                std::cout << "Serial connection accepted!" << std::endl;
+                serial_connected = true;
+            }
+        }
+
+        if (!monitor_connected) {
+            sockaddr_in monitor_addr;
+            socklen_t monitor_len = sizeof(monitor_addr);
+            monitor_sock = accept(monitor_listen_sock, (sockaddr*)&monitor_addr, &monitor_len);
+            if (monitor_sock >= 0) {
+                std::cout << "Monitor connection accepted!" << std::endl;
+                monitor_connected = true;
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    if (!serial_connected || !monitor_connected) {
+        std::cerr << "Failed to accept all connections (serial: " << serial_connected
+                  << ", monitor: " << monitor_connected << ")" << std::endl;
         return false;
     }
+
+    // Set serial socket back to blocking
+    fcntl(sock, F_SETFL, flags & ~O_NONBLOCK);
 
     connected = true;
-    std::cout << "QEMU connected successfully!" << std::endl;
 
     // Wait for hello from AVR
     std::cout << "Waiting for hello from AVR..." << std::endl;
@@ -176,6 +286,23 @@ std::string QEMUTestRunner::receiveResponse(int timeout_ms) {
 void QEMUTestRunner::cleanup() {
     std::cout << "Cleaning up QEMU and connections..." << std::endl;
 
+    // Send quit command through monitor if connected
+    if (monitor_sock >= 0) {
+        std::cout << "Sending 'quit' command to QEMU monitor..." << std::endl;
+        send(monitor_sock, "quit\n", 5, 0);
+
+        // Read monitor response
+        char buffer[1024];
+        int bytes = recv(monitor_sock, buffer, sizeof(buffer) - 1, 0);
+        if (bytes > 0) {
+            buffer[bytes] = '\0';
+            std::cout << "Monitor response: " << buffer << std::endl;
+        }
+
+        close(monitor_sock);
+        monitor_sock = -1;
+    }
+
     if (connected && sock >= 0) {
         close(sock);
         connected = false;
@@ -187,12 +314,17 @@ void QEMUTestRunner::cleanup() {
         listen_sock = -1;
     }
 
+    if (monitor_listen_sock >= 0) {
+        close(monitor_listen_sock);
+        monitor_listen_sock = -1;
+    }
+
     if (qemu_process > 0) {
         std::cout << "Waiting for QEMU process " << qemu_process << " to exit..." << std::endl;
 
-        // Wait briefly for graceful shutdown first
+        // Wait for graceful shutdown after quit command
         int status;
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 50; i++) {
             if (waitpid(qemu_process, &status, WNOHANG) > 0) {
                 std::cout << "QEMU process exited gracefully" << std::endl;
                 qemu_process = 0;

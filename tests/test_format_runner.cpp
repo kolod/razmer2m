@@ -28,9 +28,9 @@ class AVRFormatTest : public ::testing::Test {
 
         std::string avr_binary = "../../tests-avr/tests/test_format_avr";
 
-        ASSERT_TRUE(runner->createListeningSocket()) << "Failed to create listening socket";
+        ASSERT_TRUE(runner->createListeningSockets()) << "Failed to create listening sockets";
         ASSERT_TRUE(runner->startQEMU(avr_binary)) << "Failed to start QEMU";
-        ASSERT_TRUE(runner->acceptConnection()) << "Failed to accept QEMU connection";
+        ASSERT_TRUE(runner->acceptConnections()) << "Failed to accept QEMU connections";
     }
 
     static void TearDownTestSuite() {
