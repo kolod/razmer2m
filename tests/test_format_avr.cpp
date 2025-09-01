@@ -166,10 +166,6 @@ void process_command(const char* cmd) {
         } else {
             uart_puts("ERROR:Invalid parameter count\n");
         }
-    } else if (strcmp(cmd, "hello") == 0) {
-        uart_puts("hello\n");
-    } else if (strcmp(cmd, "READY") == 0) {
-        uart_puts("AVR_TEST_READY\n");
     } else {
         uart_puts("ERROR:Unknown command\n");
     }
