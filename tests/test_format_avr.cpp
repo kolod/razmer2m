@@ -179,8 +179,30 @@ int main() {
     // Initialize UART
     uart_init();
 
-    // Send ready message
-    uart_puts("AVR_TEST_READY\n");
+    // Wait for initial handshake from test runner
+    while (1) {
+        int c = uart_getchar();
+        if (c >= 0) {
+            char ch = (char)c;
+            if (ch == '\n' || ch == '\r') {
+                // End of command
+                if (cmd_index > 0) {
+                    cmd_buffer[cmd_index] = '\0';
+
+                    // Check for handshake command
+                    if (strcmp(cmd_buffer, "PING") == 0) {
+                        uart_puts("PONG\n");
+                        cmd_index = 0;
+                        break;  // Exit handshake, start normal operation
+                    }
+
+                    cmd_index = 0;
+                }
+            } else if (cmd_index < CMD_BUFFER_SIZE - 1) {
+                cmd_buffer[cmd_index++] = ch;
+            }
+        }
+    }
 
     // Main loop
     while (1) {

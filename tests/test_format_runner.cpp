@@ -151,14 +151,21 @@ class QEMUTestRunner {
                 connected = true;
                 std::cout << "Successfully connected to QEMU!" << std::endl;
 
-                // Wait for ready message
-                std::string response = receiveResponse(5000);
-                if (response.find("AVR_TEST_READY") != std::string::npos) {
-                    return true;
-                }
-                break;
-            }
+                // Perform handshake with AVR program
+                std::cout << "Sending PING handshake..." << std::endl;
+                send(sock, "PING\n", 5, 0);
 
+                std::string response = receiveResponse(5000);
+                std::cout << "Received handshake response: '" << response << "'" << std::endl;
+
+                if (response.find("PONG") != std::string::npos) {
+                    std::cout << "Handshake successful!" << std::endl;
+                    return true;
+                } else {
+                    std::cerr << "Handshake failed - expected PONG, got: " << response << std::endl;
+                    return false;
+                }
+            }
             std::cout << "Connection failed, waiting 1 second before retry..." << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
