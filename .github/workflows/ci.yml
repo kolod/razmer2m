@@ -40,7 +40,7 @@ jobs:
       run: |
         wget https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x64-linux.tar.bz2
         tar -xjf avr-gcc-15.2.0-x64-linux.tar.bz2
-        sudo mv avr-gcc-15.2.0-x64-linux /opt/avr-gcc-15.2.0
+        sudo mv avr-gcc-15.2.0-x64-linux /opt/avr-gcc
 
     - name: Install QEMU
       run: sudo apt-get install -y qemu-system-avr
@@ -48,7 +48,7 @@ jobs:
     - name: Add CMAKE & AVR-GCC to PATH
       run: |
         echo "/opt/cmake/bin" >> $GITHUB_PATH
-        echo "/opt/avr-gcc-15.1.0/bin" >> $GITHUB_PATH
+        echo "/opt/avr-gcc/bin" >> $GITHUB_PATH
 
     - name: Print tool versions
       run: |
