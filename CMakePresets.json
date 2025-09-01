@@ -91,7 +91,7 @@
             "name": "tests-avr",
             "displayName": "Run AVR Tests",
             "description": "Run AVR tests in QEMU simulator.",
-            "configurePreset": "tests-avr-runner",
+            "configurePreset": "tests-avr",
             "output": {
                 "outputOnFailure": true,
                 "verbosity": "verbose"
