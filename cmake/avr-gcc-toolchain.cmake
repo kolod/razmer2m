@@ -5,18 +5,31 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # Path to AVR-GCC toolchain
 if(NOT AVR_TOOLCHAIN_ROOT)
-    find_program(_AVR_GCC_EXE 
-        NAMES avr-gcc.exe 
-        PATHS
-            "C:/Tools/avr-gcc-15.1_2025-07-12_mingw32/bin"
-            "C:/Program Files (x86)/Arduino/hardware/tools/avr/bin"
-            "C:/Program Files (x86)/Arduino/hardware/tools/avr/bin/avr-gcc"
-            "/usr/local/avr/bin"
-            "/opt/avr-gcc/bin"
-            ENV AVR_GCC_PATH
-        OPTIONAL
-        NO_CACHE
-    )
+    if(WIN32)
+        find_program(_AVR_GCC_EXE 
+            NAMES avr-gcc.exe 
+            PATHS
+                "C:/Tools/avr-gcc-15.1_2025-07-12_mingw32/bin"
+                "C:/Program Files (x86)/Arduino/hardware/tools/avr/bin"
+                "C:/Program Files (x86)/Arduino/hardware/tools/avr/bin/avr-gcc"
+                "/usr/local/avr/bin"
+                "/opt/avr-gcc/bin"
+                ENV AVR_GCC_PATH
+            OPTIONAL
+            NO_CACHE
+        )
+    else()
+        find_program(_AVR_GCC_EXE 
+            NAMES avr-gcc 
+            PATHS
+                "/usr/local/avr/bin"
+                "/opt/avr-gcc/bin"
+                "/usr/bin"
+                ENV AVR_GCC_PATH
+            OPTIONAL
+            NO_CACHE
+        )
+    endif()
     if(_AVR_GCC_EXE)
         get_filename_component(_AVR_GCC_BIN_DIR "${_AVR_GCC_EXE}" DIRECTORY)
         get_filename_component(_AVR_GCC_ROOT "${_AVR_GCC_BIN_DIR}" DIRECTORY)
@@ -33,14 +46,25 @@ endif()
 set(AVR_TOOLCHAIN_ROOT "${_AVR_TOOLCHAIN_DEFAULT}" CACHE PATH "Path to AVR-GCC toolchain root directory")
 
 # Compiler and toolchain executables
-set(CMAKE_C_COMPILER   "${AVR_TOOLCHAIN_ROOT}/bin/avr-gcc.exe")
-set(CMAKE_CXX_COMPILER "${AVR_TOOLCHAIN_ROOT}/bin/avr-g++.exe")
-set(CMAKE_ASM_COMPILER "${AVR_TOOLCHAIN_ROOT}/bin/avr-gcc.exe")
-set(CMAKE_AR           "${AVR_TOOLCHAIN_ROOT}/bin/avr-ar.exe")
-set(CMAKE_RANLIB       "${AVR_TOOLCHAIN_ROOT}/bin/avr-ranlib.exe")
-set(CMAKE_OBJCOPY      "${AVR_TOOLCHAIN_ROOT}/bin/avr-objcopy.exe")
-set(CMAKE_OBJDUMP      "${AVR_TOOLCHAIN_ROOT}/bin/avr-objdump.exe")
-set(CMAKE_SIZE         "${AVR_TOOLCHAIN_ROOT}/bin/avr-size.exe")
+if(WIN32)
+    set(CMAKE_C_COMPILER   "${AVR_TOOLCHAIN_ROOT}/bin/avr-gcc.exe")
+    set(CMAKE_CXX_COMPILER "${AVR_TOOLCHAIN_ROOT}/bin/avr-g++.exe")
+    set(CMAKE_ASM_COMPILER "${AVR_TOOLCHAIN_ROOT}/bin/avr-gcc.exe")
+    set(CMAKE_AR           "${AVR_TOOLCHAIN_ROOT}/bin/avr-ar.exe")
+    set(CMAKE_RANLIB       "${AVR_TOOLCHAIN_ROOT}/bin/avr-ranlib.exe")
+    set(CMAKE_OBJCOPY      "${AVR_TOOLCHAIN_ROOT}/bin/avr-objcopy.exe")
+    set(CMAKE_OBJDUMP      "${AVR_TOOLCHAIN_ROOT}/bin/avr-objdump.exe")
+    set(CMAKE_SIZE         "${AVR_TOOLCHAIN_ROOT}/bin/avr-size.exe")
+else()
+    set(CMAKE_C_COMPILER   "${AVR_TOOLCHAIN_ROOT}/bin/avr-gcc")
+    set(CMAKE_CXX_COMPILER "${AVR_TOOLCHAIN_ROOT}/bin/avr-g++")
+    set(CMAKE_ASM_COMPILER "${AVR_TOOLCHAIN_ROOT}/bin/avr-gcc")
+    set(CMAKE_AR           "${AVR_TOOLCHAIN_ROOT}/bin/avr-ar")
+    set(CMAKE_RANLIB       "${AVR_TOOLCHAIN_ROOT}/bin/avr-ranlib")
+    set(CMAKE_OBJCOPY      "${AVR_TOOLCHAIN_ROOT}/bin/avr-objcopy")
+    set(CMAKE_OBJDUMP      "${AVR_TOOLCHAIN_ROOT}/bin/avr-objdump")
+    set(CMAKE_SIZE         "${AVR_TOOLCHAIN_ROOT}/bin/avr-size")
+endif()
 
 # No standard system paths
 set(CMAKE_FIND_ROOT_PATH "${AVR_TOOLCHAIN_ROOT}")

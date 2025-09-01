@@ -21,8 +21,9 @@ FetchContent_Declare(
 	googletest
 	GIT_REPOSITORY https://github.com/google/googletest.git
 	GIT_TAG v1.17.0
+	GIT_SUBMODULES ""
+	UPDATE_DISCONNECTED ON
 )
-FetchContent_MakeAvailable(googletest)
 
 # If cross-compiling for AVR
 if(CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "avr-gcc")
@@ -35,6 +36,8 @@ endif()
 
 # If running with GCC
 if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
+    FetchContent_MakeAvailable(googletest)
+
     # Native tests
     add_executable(test_format_native test_format_native.cpp)
     target_link_libraries(test_format_native gtest_main)

@@ -50,6 +50,9 @@ jobs:
         echo "/opt/cmake/bin" >> $GITHUB_PATH
         echo "/opt/avr-gcc/bin" >> $GITHUB_PATH
 
+    - name: Set AVR toolchain environment
+      run: echo "AVR_TOOLCHAIN_ROOT=/opt/avr-gcc" >> $GITHUB_ENV
+
     - name: Print tool versions
       run: |
         echo "=== Tool Versions ==="
