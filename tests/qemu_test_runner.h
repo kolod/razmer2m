@@ -83,18 +83,19 @@ class QEMUTestRunner {
     int findFreePort(int start_port, int end_port);
 
 #ifdef _WIN32
-    SOCKET listen_sock;          // Serial listening socket (port 1234)
-    SOCKET sock;                 // Serial connected socket
-    SOCKET monitor_listen_sock;  // Monitor listening socket
-    SOCKET monitor_sock;         // Monitor connected socket
+    SOCKET serial_listen_socket;   // Serial listening socket (dynamic port)
+    SOCKET serial_socket;          // Serial connected socket
+    SOCKET monitor_listen_socket;  // Monitor listening socket
+    SOCKET monitor_socket;         // Monitor connected socket
     HANDLE qemu_process;
 #else
-    int listen_sock;          // Serial listening socket (port 1234)
-    int sock;                 // Serial connected socket
-    int monitor_listen_sock;  // Monitor listening socket
-    int monitor_sock;         // Monitor connected socket
+    int serial_listen_socket;   // Serial listening socket (dynamic port)
+    int serial_socket;          // Serial connected socket
+    int monitor_listen_socket;  // Monitor listening socket
+    int monitor_socket;         // Monitor connected socket
     pid_t qemu_process;
 #endif
     bool connected;
+    int serial_port;
     int monitor_port;
 };
