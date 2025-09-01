@@ -93,6 +93,13 @@ jobs:
       run: ctest --verbose
       timeout-minutes: 5
 
+    - name: Save test logs as artifacts if failed
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-logs
+        path: build/tests-gcc/Testing/
+
     - name: Configure firmware
       run: cmake --preset firmware
 
@@ -186,11 +193,6 @@ jobs:
       run: cmake --build --preset tests-gcc
       shell: powershell
 
-    - name: Run native tests
-      working-directory: build/tests-gcc
-      run: ctest --output-on-failure
-      shell: powershell
-
     - name: Configure AVR tests
       run: cmake --preset tests-avr
       shell: powershell
@@ -199,10 +201,18 @@ jobs:
       run: cmake --build --preset tests-avr
       shell: powershell
 
-    - name: Run AVR tests under QEMU
+    - name: Run native all tests
       working-directory: build/tests-gcc
-      run: ctest --output-on-failure --tests-regex "FormatAVRTest"
+      run: ctest --verbose
+      timeout-minutes: 5
       shell: powershell
+
+    - name: Save test logs as artifacts if failed
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-logs
+        path: build/tests-gcc/Testing/
 
     - name: Configure firmware
       run: cmake --preset firmware
