@@ -50,15 +50,15 @@ if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
     
     # AVR tests under QEMU
     if(WIN32)
-        add_executable(qemu_test_runner qemu_test_runner_windows.cpp test_format_runner.cpp)
-        target_link_libraries(qemu_test_runner ws2_32 gtest_main)
+        add_executable(test_format_qemu test_format_runner.cpp qemu_test_runner_windows.cpp)
+        target_link_libraries(test_format_qemu ws2_32 gtest_main)
     else()
-        add_executable(qemu_test_runner qemu_test_runner_linux.cpp test_format_runner.cpp)
-        target_link_libraries(qemu_test_runner pthread gtest_main)
+        add_executable(test_format_qemu test_format_runner.cpp qemu_test_runner_linux.cpp)
+        target_link_libraries(test_format_qemu pthread gtest_main)
     endif()
 
-    target_include_directories(qemu_test_runner PRIVATE ".")
-    add_test(NAME FormatAVRTest COMMAND test_format_runner)
+    target_include_directories(test_format_qemu PRIVATE ".")
+    add_test(NAME FormatAVRTest COMMAND test_format_qemu)
     set_tests_properties(FormatAVRTest PROPERTIES 
         TIMEOUT 180 # 3 minutes
         LABELS "avr;slow"
