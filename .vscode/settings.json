@@ -1,8 +1,4 @@
 {
-    "testExplorer.testAdapters": [
-        "vscode-cmake-tools-test-adapter"
-    ],
-    "cmake.testPreset": "tests-gcc",
     "cmake.debugConfig": {
         "MIMode": "gdb",
         "miDebuggerPath": "gdb.exe",
