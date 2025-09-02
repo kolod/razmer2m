@@ -296,6 +296,9 @@ std::string QEMUTestRunner::receiveResponse(int timeout_ms) {
 }
 
 void QEMUTestRunner::cleanup() {
+    // Prevent double cleanup
+    if (qemu_process == 0) return;
+
     std::cout << "Cleaning up QEMU and connections..." << std::endl;
 
     // Send quit command through monitor if connected
