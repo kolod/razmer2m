@@ -15,6 +15,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 include(FetchContent)
+include(GoogleTest)
 
 # Get GoogleTest
 FetchContent_Declare(
@@ -46,8 +47,8 @@ if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
     # Native tests
     add_executable(test_format_native test_format_native.cpp)
     target_link_libraries(test_format_native gtest_main)
-    add_test(NAME FormatNativeTest COMMAND test_format_native)
-    
+    gtest_discover_tests(test_format_native)
+
     # AVR tests under QEMU
     if(WIN32)
         add_executable(test_format_qemu test_format_runner.cpp qemu_test_runner_windows.cpp)
@@ -57,15 +58,5 @@ if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
         target_link_libraries(test_format_qemu pthread gtest_main)
     endif()
 
-    target_include_directories(test_format_qemu PRIVATE ".")
-    add_test(NAME FormatAVRTest COMMAND test_format_qemu)
-    set_tests_properties(FormatAVRTest PROPERTIES 
-        TIMEOUT 180 # 3 minutes
-        LABELS "avr;slow"
-    )
-
-    # For faster development, allow skipping slow tests
-    if(DEFINED ENV{SKIP_SLOW_TESTS})
-        set_tests_properties(FormatAVRTest PROPERTIES DISABLED TRUE)
-    endif()
+    gtest_discover_tests(test_format_qemu)
 endif()

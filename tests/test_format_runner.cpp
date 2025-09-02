@@ -22,6 +22,7 @@ class AVRFormatTest : public ::testing::Test {
    protected:
     static QEMUTestRunner* runner;
 
+    // Set up QEMU test environment
     static void SetUpTestSuite() {
         // Instantiate platform-specific runner
         runner = new QEMUTestRunner();
@@ -33,6 +34,7 @@ class AVRFormatTest : public ::testing::Test {
         ASSERT_TRUE(runner->acceptConnections()) << "Failed to accept QEMU connections";
     }
 
+    // Clean up QEMU test environment
     static void TearDownTestSuite() {
         if (runner) {
             runner->cleanup();
@@ -41,6 +43,12 @@ class AVRFormatTest : public ::testing::Test {
         }
     }
 
+    // Format test command
+    // FORMAT:<axis_count>,<digit_count>,<dot_pos>,<value1>,<value2>,...
+    // <axis_count>: Number of axes (1-4)
+    // <digit_count>: Total number of digits (including sign and decimal point)
+    // <dot_pos>: Position of the decimal point (0-5)
+    // <value1>,<value2>,...: Values to format (up to 4)
     std::string formatTest(int axis_count, int digit_count, int dot_pos, const std::vector<int64_t>& values) {
         std::string cmd =
             "FORMAT:" + std::to_string(axis_count) + "," + std::to_string(digit_count) + "," + std::to_string(dot_pos);
@@ -61,6 +69,7 @@ class AVRFormatTest : public ::testing::Test {
     }
 };
 
+// Static member initialization
 QEMUTestRunner* AVRFormatTest::runner = nullptr;
 
 TEST_F(AVRFormatTest, FormatsFourAxisValues) {
