@@ -18,8 +18,10 @@
 #include <assert.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <util/delay.h>
 
 #include "config.h"
+#include "gpio.h"
 #include "spi.h"
 
 namespace display {
@@ -31,6 +33,9 @@ namespace display {
 // Because screen updating is done column by column
 // addressing is done by column first
 uint16_t buffer[8][AXIS_COUNT];
+
+// Transmission buffer for SPI
+volatile uint8_t tx_buffer[AXIS_COUNT * 2];
 
 // Convert ASCII character to segment representation
 uint8_t segment_from_ascii(char c) {
@@ -90,9 +95,30 @@ uint8_t segment_from_ascii(char c) {
     }
 }
 
-// SPI interrupt handler for display
-ISR(SPI_STC_vect) {
-    // Implement your SPI logic here
+// Clear transmission buffer
+inline void clear_tx_buffer() {
+    for (uint8_t i = AXIS_COUNT * 2; i-- > 0;) tx_buffer[i] = 0;
+}
+
+// Send identical command to all connected devices
+void send_command(uint8_t addr, uint8_t data) {
+    //_delay_us(10);  // Small delay to allow the display to process the command
+    clear_tx_buffer();
+    for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
+        tx_buffer[i * 2] = addr;
+        tx_buffer[i * 2 + 1] = data;
+    }
+    spi::transmit<sizeof(tx_buffer)>(tx_buffer);
+}
+
+// Send command to a specific device
+// To all other device we must send no-op command (0x00)
+void send_command(uint8_t addr, uint8_t data, uint8_t device) {
+    //_delay_us(10);  // Small delay to allow the display to process the command
+    clear_tx_buffer();
+    tx_buffer[device * 2] = addr;
+    tx_buffer[device * 2 + 1] = data;
+    spi::transmit<sizeof(tx_buffer)>(tx_buffer);
 }
 
 inline void init() {
@@ -100,16 +126,21 @@ inline void init() {
     spi::init();
 
     // Initialize MAX7219
-    spi::transmit(static_cast<uint16_t>(0x0900), AXIS_COUNT);  // Decode mode: BCD
-    spi::transmit(static_cast<uint16_t>(0x0A0F), AXIS_COUNT);  // Intensity: 0 (min)
-    spi::transmit(static_cast<uint16_t>(0x0B0B), AXIS_COUNT);  // Scan limit: all 8 digits
-    spi::transmit(static_cast<uint16_t>(0x0C0C), AXIS_COUNT);  // Shutdown register: normal operation
+    send_command(0x09, 0x00);  // Decode mode: BCD
+    send_command(0x0A, 0x0F);  // Intensity: 0 (min)
+    send_command(0x0B, 0x0B);  // Scan limit: all 8 digits
+    send_command(0x0C, 0x0C);  // Shutdown register: normal operation
 }
 
 // Update display content
 void update() {
-    for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
-        spi::transmit(buffer[i], AXIS_COUNT);
+    for (uint8_t col = 0; col < 8; ++col) {
+        // Prepare buffer for this column across all devices
+        for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
+            tx_buffer[i * 2] = col + 1;             // Address (1-8)
+            tx_buffer[i * 2 + 1] = buffer[col][i];  // Data
+        }
+        spi::transmit<sizeof(tx_buffer)>(tx_buffer);
     }
 }
 
@@ -143,6 +174,8 @@ void write(const char* string) {
         // Assert on row overflow
         assert(row < AXIS_COUNT);
     }
+
+    update();
 }
 
 #endif

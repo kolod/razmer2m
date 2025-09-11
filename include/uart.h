@@ -33,7 +33,7 @@ char* buffer_ptr;
 // Setup UART
 void init() {
     // Set baud rate
-    uint16_t ubrr = F_CPU / 16 / BAUDRATE - 1;
+    constexpr uint16_t ubrr = F_CPU / 16 / BAUDRATE - 1;
     UBRR0 = static_cast<uint16_t>(ubrr);  // Set baud rate
 
 #if defined(RECEIVER)

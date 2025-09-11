@@ -16,55 +16,102 @@
 
 #pragma once
 
+#include <avr/interrupt.h>
 #include <avr/io.h>
+#include <util/delay.h>
 
 namespace spi {
 
-void init() {
-    // Set MOSI and SCK as Output
-    // DDRB |= _BV(PB3) | _BV(PB5);
-    // Enable SPI, Set as Master
-    SPCR |= _BV(SPE) | _BV(MSTR);
-    // Set SPI Clock Rate
-    SPSR |= _BV(SPI2X);
-}
+volatile uint8_t* buffer_ptr = nullptr;
+volatile uint8_t* buffer_end_ptr = nullptr;
 
-// Transmit data as address and data
-inline void transmit(uint8_t addr, uint8_t data) {
-    loop_until_bit_is_set(SPSR, SPIF);  // Wait for transmission complete
-    SPDR = addr;                        // Transmit address
-    loop_until_bit_is_set(SPSR, SPIF);  // Wait for transmission complete
-    SPDR = data;                        // Transmit data
-}
+// Initialize SPI
+// Set spi mode 0, MSB first, 125 kHz clock (assuming 16MHz system clock), master mode
+inline void init() {
+    // Set SPI pins direction for master mode:
+    // - PB2 (CS): output, initially high (deselected)
+    // - PB3 (MOSI): output
+    // - PB4 (MISO): input with pull-up
+    // - PB5 (SCK): output
+    DDRB |= static_cast<uint8_t>(_BV(PB2) | _BV(PB3) | _BV(PB5));
+    DDRB &= static_cast<uint8_t>(~_BV(PB4));
+    PORTB |= static_cast<uint8_t>(_BV(PB2) | _BV(PB4));  // CS high, MISO pull-up
 
-// Transmit address and data as uint16_t
-inline void transmit(uint16_t data) { transmit(data >> 8, data & 0xFF); }
+    // Enable SPI, Set as Master, Mode 0 (CPOL=0, CPHA=0)
+    // Prescaler: F_CPU / 128 = 125 kHz (SPR1=1, SPR0=1)
+    SPCR = static_cast<uint8_t>((_BV(SPE) | _BV(MSTR) | _BV(SPR1) | _BV(SPR0)));
+}
 
 // Enable chip select
 inline void start() { PORTB &= static_cast<uint8_t>(~_BV(PB2)); }
 
 // Disable chip select
-inline void stop() { PORTB |= static_cast<uint8_t>(_BV(PB2)); }
+inline void stop() {
+    PORTB |= static_cast<uint8_t>(_BV(PB2));
 
-// Transmit multiple 16-bit words
-void transmit(uint16_t data[], uint8_t count) {
-    start();
-    for (uint8_t i = 0; i < count; ++i) transmit(data[i]);
-    stop();
+    // Small delay to allow the device to process the command
+    _delay_us(10);
 }
 
-// Transmit a identical 16-bit word to multiple devices
-void transmit(uint16_t data, uint8_t count) {
-    start();
-    for (uint8_t i = 0; i < count; ++i) transmit(data);
-    stop();
+// Check if SPI is busy transmitting data
+// Returns true if transmission is ongoing
+inline bool is_busy() {
+    uint8_t sreg = SREG;
+    cli();
+    bool busy = !(buffer_ptr == nullptr || buffer_end_ptr == nullptr || buffer_ptr >= buffer_end_ptr);
+    SREG = sreg;
+    return busy;
 }
 
-// Transmit data as address and data to multiple devices
-void transmit(uint8_t addr, uint8_t data[], uint8_t count) {
+// Wait until SPI transmission is complete
+inline void wait_until_done() {
+    while (is_busy()) {
+        _delay_us(10);
+    }
+}
+
+// Transmit 16-bit data to all connected devices
+template <size_t size>
+void transmit(volatile uint8_t* data) {
+    gpio::set_debug_1(1);
+    wait_until_done();
+
+    // Save buffer pointers
+    buffer_ptr = data;
+    buffer_end_ptr = data + size;
+
+    // Enable chip select
     start();
-    for (uint8_t i = 0; i < count; ++i) transmit(addr, data[i]);
-    stop();
+
+    // Start transmission by sending the first byte
+    SPDR = *buffer_ptr++;
+
+    // Enable SPI interrupt AFTER starting the first byte transmission
+    SPCR |= static_cast<uint8_t>(_BV(SPIE));
+}
+
+// SPI Interrupt Service Routine
+ISR(SPI_STC_vect) {
+    gpio::set_debug_0(1);
+
+    // Check if all bytes have been sent
+    if (buffer_ptr >= buffer_end_ptr) {
+        stop();
+
+        // All data sent, disable interrupt and deselect chip
+        SPCR &= static_cast<uint8_t>(~_BV(SPIE));
+
+        // Reset buffer pointers to indicate transmission complete
+        buffer_ptr = nullptr;
+        buffer_end_ptr = nullptr;
+
+        gpio::set_debug_1(0);
+    } else {
+        // Transmit next byte from buffer
+        SPDR = *buffer_ptr++;
+    }
+
+    gpio::set_debug_0(0);
 }
 
 }  // namespace spi

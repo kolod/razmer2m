@@ -25,6 +25,7 @@
 #endif
 
 extern "C" int main() {
+    sei();  // Enable global interrupts
     MODULE::init();
     while (true) {
         MODULE::update();

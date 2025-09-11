@@ -52,8 +52,6 @@ void next_algorithm() {
 
 // Function must be called 50 times per second in interrupt routine
 void update_50_hz() {
-    gpio::set_debug_1(1);
-
     // Emulate sending message from transmitter
     uart::transmit(msg);
 
@@ -69,8 +67,6 @@ void update_50_hz() {
 
     // Increment frame_counter
     frame_counter++;
-
-    gpio::set_debug_1(0);
 }
 
 // Function must be called 2000 times per second in interrupt routine
@@ -102,8 +98,9 @@ int64_t random_axis() {
 void update() {
     // When next_axis copied to axis we can prepare next_axis
     if (axis_updated) {
+        // Update next_axis based on current algorithm
         switch (algorithm) {
-            // Random algorithm
+                // Random algorithm
             case algorithm_t::RANDOM:
                 for (uint8_t i = 0; i < AXIS_COUNT; ++i) next_axis[i] = random_axis();
                 break;
@@ -125,16 +122,14 @@ void update() {
         }
 
         // Prepare the message for transmission
-        gpio::set_debug_0(1);
         msg = format(next_axis);
-        gpio::set_debug_0(0);
+
+        // Put message directly on display
+        display::write(msg);
 
         // Reset axis_updated flag
         axis_updated = false;
     }
-
-    // Put message directly on display
-    // display::write(msg);
 
     // Change algorithm every 5 seconds
     if (frame_counter >= 50 * 5) {
@@ -147,12 +142,8 @@ void update() {
 inline void init() {
     gpio::init();
     uart::init();
-    spi::init();
-    // display::init();
+    display::init();
     timer::init(update_2000_hz);
-
-    // Enable interrupts
-    sei();
 }
 
 }  // namespace emulator
