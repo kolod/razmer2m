@@ -25,7 +25,7 @@ namespace uart {
 // Zero-terminated buffer for UART transmission
 //  - on emulator and transmitter mode, this buffer holds the data to be transmitted
 //  - on receiver mode, this buffer holds the received data
-char buffer[AXIS_COUNT * 10];
+char buffer[AXIS_COUNT * 10 + 1];
 
 // Pointer to the current position in the buffer
 char* buffer_ptr;
@@ -36,18 +36,16 @@ void init() {
     uint16_t ubrr = F_CPU / 16 / BAUDRATE - 1;
     UBRR0 = static_cast<uint16_t>(ubrr);  // Set baud rate
 
-#if defined(EMULATOR) || defined(TRANSMITTER)
-    // Enable transmitter only
-    UCSR0B |= static_cast<uint8_t>(1 << TXEN0);
-    // Enable data register empty interrupt
-    UCSR0B |= static_cast<uint8_t>(1 << UDRIE0);
-#elif defined(RECEIVER)
+#if defined(RECEIVER)
     // Initialize buffer pointer
     buffer_ptr = buffer;
     // Enable receiver only
     UCSR0B |= static_cast<uint8_t>(1 << RXEN0);
     // Enable receive complete interrupt
     UCSR0B |= static_cast<uint8_t>(1 << RXCIE0);
+#elif defined(EMULATOR) || defined(TRANSMITTER)
+    // Enable transmitter only
+    UCSR0B |= static_cast<uint8_t>(1 << TXEN0);
 #endif
 
     // Set frame format: 8 data bits, 1 stop bit
@@ -59,18 +57,11 @@ void init() {
 #if defined(EMULATOR) || defined(TRANSMITTER)
 
 ISR(USART_UDRE_vect) {
-    gpio::set_debug_0(1);
-
     // Transmit next byte
     UDR0 = static_cast<uint8_t>(*buffer_ptr++);
 
-    // Check if there are more bytes to transmit
-    if (*buffer_ptr == '\0') {
-        // Disable data register empty interrupt
-        UCSR0B &= static_cast<uint8_t>(~_BV(UDRIE0));
-    }
-
-    gpio::set_debug_0(0);
+    // If no more bytes to transmit, disable the data register empty interrupt and transmitter
+    if (*buffer_ptr == '\0') UCSR0B &= static_cast<uint8_t>(~_BV(UDRIE0));
 }
 
 #elif defined(RECEIVER)
@@ -94,11 +85,23 @@ ISR(USART_RX_vect) {
 #endif
 
 // Start buffer transmit
-//  - put first 2 bytes into the transmit register
-//  - enable transmit register empty interrupt if more then 2 bytes in buffer
+//  - copy data to internal buffer
+//  - enable transmitter and data register empty interrupt
 void transmit(char* buf) {
+    // Ensure the buffer is not null
+    if (buf == nullptr) return;
+
+    // If buffer is empty, do nothing
+    if (*buf == '\0') return;
+
+    // Copy data to buffer with zero-termination
+    for (size_t i = 0; i < sizeof(buffer); i++) {
+        buffer[i] = *buf++;
+        if (buffer[i] == '\0') break;
+    }
+
     // Initialize buffer pointer
-    buffer_ptr = buf;
+    buffer_ptr = buffer;
 
     // Transmit first byte
     if (*buffer_ptr == '\0') return;             // Ensure the buffer is not empty

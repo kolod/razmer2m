@@ -124,12 +124,14 @@ void update() {
                 break;
         }
 
+        // Prepare the message for transmission
+        gpio::set_debug_0(1);
+        msg = format(next_axis);
+        gpio::set_debug_0(0);
+
         // Reset axis_updated flag
         axis_updated = false;
     }
-
-    // Prepare the message for transmission
-    msg = format(next_axis);
 
     // Put message directly on display
     // display::write(msg);
