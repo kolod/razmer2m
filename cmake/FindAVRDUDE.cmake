@@ -160,7 +160,6 @@ if(AVRDUDE_EXECUTABLE)
             LFUSE
             HFUSE
             EFUSE
-            REPORT_FILE
         )
         set(AVRDUDE_UPLOAD_PARAM_MULTI_VALUE_KEYWORDS)
 
@@ -190,26 +189,59 @@ if(AVRDUDE_EXECUTABLE)
         get_target_property(AVRDUDE_UPLOAD_HEX_FILE ${AVRDUDE_UPLOAD_TARGET} HEX_FILE)
 
         # Construct avrdude command
-        set(_AVRDUDE_ARGS "-p ${AVRDUDE_UPLOAD_MCU} -c ${AVRDUDE_UPLOAD_PROGRAMMER}")
+        set(_AVRDUDE_ARG_MCU "-p${AVRDUDE_UPLOAD_MCU}")
+        set(_AVRDUDE_ARG_PROGRAMMER "-c${AVRDUDE_UPLOAD_PROGRAMMER}")
+
         if(AVRDUDE_UPLOAD_PORT)
-            string(APPEND _AVRDUDE_ARGS " -P ${AVRDUDE_UPLOAD_PORT}")
+            set(_AVRDUDE_ARG_PORT "-P${AVRDUDE_UPLOAD_PORT}")
+        else()
+            set(_AVRDUDE_ARG_PORT "")
         endif()
+
         if(AVRDUDE_UPLOAD_BAUDRATE)
-            string(APPEND _AVRDUDE_ARGS " -b ${AVRDUDE_UPLOAD_BAUDRATE}")
+            set(_AVRDUDE_ARG_BAUDRATE "-b${AVRDUDE_UPLOAD_BAUDRATE}")
+        else()
+            set(_AVRDUDE_ARG_BAUDRATE "")
         endif()
+        
+        if(AVRDUDE_UPLOAD_VERBOSE)
+            set(_AVRDUDE_ARG_VERBOSE "-v")
+        else()
+            set(_AVRDUDE_ARG_VERBOSE "")
+        endif()
+
         if(AVRDUDE_UPLOAD_LFUSE)
-            string(APPEND _AVRDUDE_ARGS " -U lfuse:w:${AVRDUDE_UPLOAD_LFUSE}:m")
+            set(_AVRDUDE_ARG_LFUSE "-U lfuse:w:${AVRDUDE_UPLOAD_LFUSE}:m")
+        else()
+            set(_AVRDUDE_ARG_LFUSE "")
         endif()
+
         if(AVRDUDE_UPLOAD_HFUSE)
-            string(APPEND _AVRDUDE_ARGS " -U hfuse:w:${AVRDUDE_UPLOAD_HFUSE}:m")
+            set(_AVRDUDE_ARG_HFUSE "-U hfuse:w:${AVRDUDE_UPLOAD_HFUSE}:m")
+        else()
+            set(_AVRDUDE_ARG_HFUSE "")
         endif()
+        
         if(AVRDUDE_UPLOAD_EFUSE)
-            string(APPEND _AVRDUDE_ARGS " -U efuse:w:${AVRDUDE_UPLOAD_EFUSE}:m")
+            set(_AVRDUDE_ARG_EFUSE "-U efuse:w:${AVRDUDE_UPLOAD_EFUSE}:m")
+        else()
+            set(_AVRDUDE_ARG_EFUSE "")
         endif()
-        string(APPEND _AVRDUDE_ARGS " -U flash:w:${AVRDUDE_UPLOAD_HEX_FILE}:i")
+
+        set(_AVRDUDE_ARGS_FILE "-Uflash:w:${AVRDUDE_UPLOAD_HEX_FILE}:i")
 
         add_custom_target(${name}
-            ${AVRDUDE_EXECUTABLE} ${_AVRDUDE_ARGS}
+            ${AVRDUDE_EXECUTABLE} 
+            ${_AVRDUDE_ARG_MCU} 
+            ${_AVRDUDE_ARG_PROGRAMMER} 
+            ${_AVRDUDE_ARG_PORT} 
+            ${_AVRDUDE_ARG_BAUDRATE} 
+            ${_AVRDUDE_ARG_VERBOSE} 
+            ${_AVRDUDE_ARG_REPORT_FILE}
+            ${_AVRDUDE_ARG_LFUSE}
+            ${_AVRDUDE_ARG_HFUSE}
+            ${_AVRDUDE_ARG_EFUSE}
+            ${_AVRDUDE_ARGS_FILE}
             COMMENT "Uploading firmware to ${AVRDUDE_UPLOAD_MCU} via ${AVRDUDE_UPLOAD_PROGRAMMER} on ${AVRDUDE_UPLOAD_PORT}"
             DEPENDS ${AVRDUDE_UPLOAD_INPUT}
         )

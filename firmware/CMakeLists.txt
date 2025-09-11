@@ -57,7 +57,6 @@ if(BUILD_EMULATOR)
         PORT COM6
         BAUDRATE 115200
         VERBOSE
-        REPORT_FILE upload_report.txt
     )
 endif()
 
@@ -89,7 +88,6 @@ if(BUILD_TRANSMITTER)
         HFUSE 0xD9
         EFUSE 0xFF
         VERBOSE
-        REPORT_FILE upload_report.txt
     )
 endif()
 
@@ -121,6 +119,5 @@ if(BUILD_RECEIVER)
         HFUSE 0xD9
         EFUSE 0xFF
         VERBOSE
-        REPORT_FILE upload_report.txt
     )
 endif()

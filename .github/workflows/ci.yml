@@ -91,7 +91,7 @@ jobs:
     - name: Run all tests
       working-directory: build/tests-gcc
       run: ctest --verbose
-      #timeout-minutes: 5
+      timeout-minutes: 5
 
     - name: Save test logs as artifacts if failed
       if: failure()
