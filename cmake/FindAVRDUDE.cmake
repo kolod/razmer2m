@@ -190,26 +190,26 @@ if(AVRDUDE_EXECUTABLE)
         get_target_property(AVRDUDE_UPLOAD_HEX_FILE ${AVRDUDE_UPLOAD_TARGET} HEX_FILE)
 
         # Construct avrdude command
-        set(_AVRDUDE_COMMAND "${AVRDUDE_EXECUTABLE} -p ${AVRDUDE_UPLOAD_MCU} -c ${AVRDUDE_UPLOAD_PROGRAMMER}")
+        set(_AVRDUDE_ARGS "-p ${AVRDUDE_UPLOAD_MCU} -c ${AVRDUDE_UPLOAD_PROGRAMMER}")
         if(AVRDUDE_UPLOAD_PORT)
-            string(APPEND _AVRDUDE_COMMAND " -P ${AVRDUDE_UPLOAD_PORT}")
+            string(APPEND _AVRDUDE_ARGS " -P ${AVRDUDE_UPLOAD_PORT}")
         endif()
         if(AVRDUDE_UPLOAD_BAUDRATE)
-            string(APPEND _AVRDUDE_COMMAND " -b ${AVRDUDE_UPLOAD_BAUDRATE}")
+            string(APPEND _AVRDUDE_ARGS " -b ${AVRDUDE_UPLOAD_BAUDRATE}")
         endif()
         if(AVRDUDE_UPLOAD_LFUSE)
-            string(APPEND _AVRDUDE_COMMAND " -U lfuse:w:${AVRDUDE_UPLOAD_LFUSE}:m")
+            string(APPEND _AVRDUDE_ARGS " -U lfuse:w:${AVRDUDE_UPLOAD_LFUSE}:m")
         endif()
         if(AVRDUDE_UPLOAD_HFUSE)
-            string(APPEND _AVRDUDE_COMMAND " -U hfuse:w:${AVRDUDE_UPLOAD_HFUSE}:m")
+            string(APPEND _AVRDUDE_ARGS " -U hfuse:w:${AVRDUDE_UPLOAD_HFUSE}:m")
         endif()
         if(AVRDUDE_UPLOAD_EFUSE)
-            string(APPEND _AVRDUDE_COMMAND " -U efuse:w:${AVRDUDE_UPLOAD_EFUSE}:m")
+            string(APPEND _AVRDUDE_ARGS " -U efuse:w:${AVRDUDE_UPLOAD_EFUSE}:m")
         endif()
-        string(APPEND _AVRDUDE_COMMAND " -U flash:w:${AVRDUDE_UPLOAD_HEX_FILE}:i")
+        string(APPEND _AVRDUDE_ARGS " -U flash:w:${AVRDUDE_UPLOAD_HEX_FILE}:i")
 
         add_custom_target(${name}
-            COMMAND ${_AVRDUDE_COMMAND}
+            ${AVRDUDE_EXECUTABLE} ${_AVRDUDE_ARGS}
             COMMENT "Uploading firmware to ${AVRDUDE_UPLOAD_MCU} via ${AVRDUDE_UPLOAD_PROGRAMMER} on ${AVRDUDE_UPLOAD_PORT}"
             DEPENDS ${AVRDUDE_UPLOAD_INPUT}
         )
