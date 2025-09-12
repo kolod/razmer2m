@@ -96,6 +96,8 @@ int64_t random_axis() {
 
 // Slow function, must be called in main loop
 void update() {
+    gpio::debug<1>(spi::is_busy() ? 1 : 0);
+
     // When next_axis copied to axis we can prepare next_axis
     if (axis_updated) {
         // Update next_axis based on current algorithm
@@ -137,6 +139,9 @@ void update() {
         axis_ready = true;
         next_algorithm();
     }
+
+    // Update display
+    display::update();
 }
 
 inline void init() {

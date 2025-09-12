@@ -101,24 +101,24 @@ inline void clear_tx_buffer() {
 }
 
 // Send identical command to all connected devices
-void send_command(uint8_t addr, uint8_t data) {
-    //_delay_us(10);  // Small delay to allow the display to process the command
-    clear_tx_buffer();
-    for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
-        tx_buffer[i * 2] = addr;
-        tx_buffer[i * 2 + 1] = data;
-    }
+void send_command(const uint8_t addr, const uint8_t data) {
+    for (uint8_t i = 0; i < AXIS_COUNT; i++) tx_buffer[i * 2] = addr;
+    for (uint8_t i = 0; i < AXIS_COUNT; i++) tx_buffer[i * 2 + 1] = data;
     spi::transmit<sizeof(tx_buffer)>(tx_buffer);
+    spi::wait_until_done();
+    _delay_us(10);  // Small delay to allow the display to process the command
 }
 
 // Send command to a specific device
 // To all other device we must send no-op command (0x00)
-void send_command(uint8_t addr, uint8_t data, uint8_t device) {
+void send_command(const uint8_t addr, const uint8_t data, const uint8_t device) {
     //_delay_us(10);  // Small delay to allow the display to process the command
     clear_tx_buffer();
     tx_buffer[device * 2] = addr;
     tx_buffer[device * 2 + 1] = data;
     spi::transmit<sizeof(tx_buffer)>(tx_buffer);
+    spi::wait_until_done();
+    _delay_us(10);  // Small delay to allow the display to process the command
 }
 
 inline void init() {
@@ -126,22 +126,44 @@ inline void init() {
     spi::init();
 
     // Initialize MAX7219
-    send_command(0x09, 0x00);  // Decode mode: BCD
-    send_command(0x0A, 0x0F);  // Intensity: 0 (min)
-    send_command(0x0B, 0x0B);  // Scan limit: all 8 digits
-    send_command(0x0C, 0x0C);  // Shutdown register: normal operation
+    send_command(0x09, 0x00);  // Decode mode: no decode for all digits
+    send_command(0x0A, 0x0F);  // Intensity: 31/32 (max)
+    send_command(0x0B, 0x07);  // Scan limit: all 8 digits
+    send_command(0x0C, 0x01);  // Shutdown register: normal operation
 }
 
-// Update display content
-void update() {
-    for (uint8_t col = 0; col < 8; ++col) {
-        // Prepare buffer for this column across all devices
-        for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
-            tx_buffer[i * 2] = col + 1;             // Address (1-8)
-            tx_buffer[i * 2 + 1] = buffer[col][i];  // Data
-        }
-        spi::transmit<sizeof(tx_buffer)>(tx_buffer);
+// Current column being updated (1-8)
+uint8_t current_column = 0;
+
+// Start display update sequence
+void start_update() {
+    // Wait until any previous transmission is done
+    spi::wait_until_done();
+    // Prepare buffer for first column across all devices
+    for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
+        tx_buffer[i * 2] = 1;      // Address (1-8)
+        tx_buffer[i * 2 + 1] = 0;  // buffer[0][i];  // Data
     }
+    // Start transmission
+    spi::transmit<sizeof(tx_buffer)>(tx_buffer);
+    // Set to first column
+    current_column = 1;
+}
+
+// Continue display update sequence
+void update() {
+    // Skip if previous transmission is not done
+    if (spi::is_busy()) return;
+    // Stop if all columns have been updated
+    if (current_column > 7) return;
+    // Skip if first update not started
+    if (current_column == 0) return;
+    // Prepare buffer for this column across all devices & increment column
+    for (uint8_t i = 0; i < AXIS_COUNT; ++i) tx_buffer[i * 2 + 1] = buffer[current_column][i];  // Data
+    current_column++;
+    for (uint8_t i = 0; i < AXIS_COUNT; ++i) tx_buffer[i * 2] = current_column;  // Address (1-8)
+    // Start transmission
+    spi::transmit<sizeof(tx_buffer)>(tx_buffer);
 }
 
 void write(const char* string) {
@@ -175,7 +197,8 @@ void write(const char* string) {
         assert(row < AXIS_COUNT);
     }
 
-    update();
+    // Start display update
+    start_update();
 }
 
 #endif

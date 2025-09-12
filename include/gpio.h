@@ -77,27 +77,19 @@ void init() {
 }
 
 // Set debug pin 0
-void set_debug_0(uint8_t value) {
+template <uint8_t pin>
+inline void debug(uint8_t value) {
     if (value) {
-        PORTB |= (1 << PB0);
+        PORTB |= static_cast<uint8_t>(_BV(pin));
     } else {
-        PORTB &= static_cast<uint8_t>(~(1 << PB0));
-    }
-}
-
-// Set debug pin 1
-void set_debug_1(uint8_t value) {
-    if (value) {
-        PORTB |= static_cast<uint8_t>(1 << PB1);
-    } else {
-        PORTB &= static_cast<uint8_t>(~(1 << PB1));
+        PORTB &= static_cast<uint8_t>(~_BV(pin));
     }
 }
 
 // Toggle debug pin 0
-void toggle_debug_0() { PORTB ^= static_cast<uint8_t>(1 << PB0); }
+void toggle_debug_0() { PORTB ^= static_cast<uint8_t>(_BV(PB0)); }
 
 // Toggle debug pin 1
-void toggle_debug_1() { PORTB ^= static_cast<uint8_t>(1 << PB1); }
+void toggle_debug_1() { PORTB ^= static_cast<uint8_t>(_BV(PB1)); }
 
 }  // namespace gpio
