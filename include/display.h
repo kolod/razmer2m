@@ -87,9 +87,8 @@ uint8_t segment_from_ascii(char c) {
         case '-':
             return 0x01;  // Minus
         case '.':
-            return 0x80;  // Dot
         case ',':
-            return 0x80;  // Alternate dot
+            return 0x80;  // Dot
         default:
             return 0x00;  // Blank for unsupported characters and spaces
     }
@@ -141,7 +140,7 @@ void start_update() {
     spi::wait_until_done();
     // Prepare buffer for first column across all devices
     for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
-        tx_buffer[i * 2] = 1;      // Address (1-8)
+        tx_buffer[i * 2] = 8;      // Address (1-8)
         tx_buffer[i * 2 + 1] = 0;  // buffer[0][i];  // Data
     }
     // Start transmission
@@ -159,9 +158,11 @@ void update() {
     // Skip if first update not started
     if (current_column == 0) return;
     // Prepare buffer for this column across all devices & increment column
-    for (uint8_t i = 0; i < AXIS_COUNT; ++i) tx_buffer[i * 2 + 1] = buffer[current_column][i];  // Data
+    for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
+        tx_buffer[i * 2 + 1] = buffer[current_column][i];  // Data
+        tx_buffer[i * 2] = 8 - current_column;             // Address (1-8)
+    }
     current_column++;
-    for (uint8_t i = 0; i < AXIS_COUNT; ++i) tx_buffer[i * 2] = current_column;  // Address (1-8)
     // Start transmission
     spi::transmit<sizeof(tx_buffer)>(tx_buffer);
 }
@@ -171,9 +172,11 @@ void write(const char* string) {
     uint8_t row = 0;
 
     while (*string) {
-        // Ignore ':'
+        // Axis separator
         if (*string == ':') {
-            ++string;
+            column = 0;
+            row++;
+            string++;
             continue;
         }
 
@@ -183,18 +186,15 @@ void write(const char* string) {
         // If next char is dot
         if (*string == '.') {
             buffer[column][row] |= 0x80;  // Set the dot bit
-            ++string;
+            string++;
         }
 
-        // Move to next column
-        if (++column < 7) continue;
-        column = 0;
+        // Move to next column;
+        column++;
 
-        // Next row
-        row++;
-
-        // Assert on row overflow
+        // Assert on overflow
         assert(row < AXIS_COUNT);
+        assert(column < 8);
     }
 
     // Start display update

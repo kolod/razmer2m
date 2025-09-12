@@ -94,6 +94,8 @@ int64_t random_axis() {
     return v;
 }
 
+uint8_t random_delay_counter = 0;
+
 // Slow function, must be called in main loop
 void update() {
     gpio::debug<1>(spi::is_busy() ? 1 : 0);
@@ -102,9 +104,16 @@ void update() {
     if (axis_updated) {
         // Update next_axis based on current algorithm
         switch (algorithm) {
-                // Random algorithm
+            // Random algorithm
             case algorithm_t::RANDOM:
-                for (uint8_t i = 0; i < AXIS_COUNT; ++i) next_axis[i] = random_axis();
+                if (random_delay_counter == 0) {
+                    for (uint8_t i = 0; i < AXIS_COUNT; ++i) next_axis[i] = random_axis();
+                }
+
+                if (++random_delay_counter >= 50) {
+                    random_delay_counter = 0;
+                }
+
                 break;
 
             // Incrementing algorithm
