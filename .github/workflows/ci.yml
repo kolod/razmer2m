@@ -5,11 +5,23 @@ on:
     branches: 
     - main
     - develop
+    paths-ignore: 
+    - README.md
+    - docs/**
+    - images/**  
+    - .gitignore
+    - LICENSE
   pull_request:
     branches: 
     - main
+    paths-ignore: 
+    - README.md
+    - docs/**
+    - images/**
+    - .gitignore
+    - LICENSE
   workflow_dispatch:
-
+  
 jobs:
   test-and-build:
     runs-on: ${{ matrix.os }}
