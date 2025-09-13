@@ -124,11 +124,15 @@ inline void init() {
     // Initialize SPI
     spi::init();
 
+    uint8_t digits = AXIS_DIGIT_COUNT + 1;
+    if (digits > 8) digits = 8;
+
     // Initialize MAX7219
-    send_command(0x09, 0x00);  // Decode mode: no decode for all digits
-    send_command(0x0A, 0x0F);  // Intensity: 31/32 (max)
-    send_command(0x0B, 0x07);  // Scan limit: all 8 digits
-    send_command(0x0C, 0x01);  // Shutdown register: normal operation
+    send_command(0x09, 0x00);    // Decode mode: no decode for all digits
+    send_command(0x0A, 0x00);    // Intensity: 1/32 (max)
+    send_command(0x0B, digits);  // Scan limit: all 8 digits
+    send_command(0x0C, 0x01);    // Shutdown register: normal operation
+    send_command(0x0F, 0x00);    // Display test: off
 }
 
 // Current column being updated (1-8)
