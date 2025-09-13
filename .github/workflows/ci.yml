@@ -22,15 +22,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Cache AVR-GCC toolchain
-      id: avr-gcc-cache
+    - name: Cache AVR-GCC toolchain (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      id: avr-gcc-cache-linux
       uses: actions/cache@v4
       with:
         path: /opt/avr-gcc
-        key: avr-gcc-15.2.0-x64-${{ matrix.os }}
+        key: avr-gcc-15.2.0-x64-linux
+
+    - name: Cache AVR-GCC toolchain (Windows)
+      if: matrix.os == 'windows-latest'
+      id: avr-gcc-cache-windows
+      uses: actions/cache@v4
+      with:
+        path: C:\avr-gcc
+        key: avr-gcc-15.2.0-x64-windows
 
     - name: Install AVR-GCC 15.2.0 toolchain on Linux
-      if: steps.avr-gcc-cache.outputs.cache-hit != 'true' && matrix.os == 'ubuntu-latest'
+      if: steps.avr-gcc-cache-linux.outputs.cache-hit != 'true' && matrix.os == 'ubuntu-latest'
       run: |
         wget https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x64-linux.tar.bz2
         tar -xjf avr-gcc-15.2.0-x64-linux.tar.bz2
@@ -38,13 +47,21 @@ jobs:
         echo "/opt/avr-gcc/bin" >> $GITHUB_PATH
 
     - name: Install AVR-GCC 15.2.0 toolchain on Windows
-      if: steps.avr-gcc-cache.outputs.cache-hit != 'true' && matrix.os == 'windows-latest'
+      if: steps.avr-gcc-cache-windows.outputs.cache-hit != 'true' && matrix.os == 'windows-latest'
       run: |
         Invoke-WebRequest -Uri "https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x64-windows.zip" -OutFile "avr-gcc.zip"
         Expand-Archive -Path "avr-gcc.zip" -DestinationPath "C:\"
         Rename-Item "C:\avr-gcc-15.2.0-x64-windows" "C:\avr-gcc"
-        echo "C:\avr-gcc\bin" >> $GITHUB_PATH
+        echo "C:\avr-gcc\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         dir "C:\avr-gcc\bin\"
+
+    - name: Add cached AVR-GCC to PATH (Linux)
+      if: steps.avr-gcc-cache-linux.outputs.cache-hit == 'true' && matrix.os == 'ubuntu-latest'
+      run: echo "/opt/avr-gcc/bin" >> $GITHUB_PATH
+
+    - name: Add cached AVR-GCC to PATH (Windows)
+      if: steps.avr-gcc-cache-windows.outputs.cache-hit == 'true' && matrix.os == 'windows-latest'
+      run: echo "C:\avr-gcc\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: Print PATH
       run: echo $PATH
@@ -52,11 +69,12 @@ jobs:
     - name: Print tool versions
       run: |
         echo "=== Tool Versions ==="
-        echo "CMAKE_VERSION  : $(cmake --version)"
-        echo "NINJA_VERSION  : $(ninja --version)"
-        echo "GCC_VERSION    : $(gcc --version)"
-        echo "AVR_GCC_VERSION: $(avr-gcc --version)"
+        echo "CMAKE_VERSION   : $(cmake --version   | Select-Object -First 1)"
+        echo "NINJA_VERSION   : $(ninja --version   | Select-Object -First 1)"
+        echo "GCC_VERSION     : $(gcc --version     | Select-Object -First 1)"
+        echo "AVR_GCC_VERSION : $(avr-gcc --version | Select-Object -First 1)"
         echo "====================="
+      shell: pwsh
 
     - name: Configure native tests
       run: cmake --preset tests-gcc
