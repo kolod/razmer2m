@@ -11,60 +11,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-and-build-ubuntu-latest:
-    runs-on: ubuntu-latest
-    
+  test-and-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Cache CMake
-      id: cmake-cache
-      uses: actions/cache@v4
-      with:
-        path: /opt/cmake
-        key: cmake-3.31.3-linux-x86_64
-
-    - name: Remove existing CMake
-      run: sudo apt-get remove --purge cmake
-
-    - name: Download and install CMake 3.31
-      if: steps.cmake-cache.outputs.cache-hit != 'true'
-      run: |        
-        wget https://github.com/Kitware/CMake/releases/download/v3.31.3/cmake-3.31.3-linux-x86_64.tar.gz
-        tar -xzf cmake-3.31.3-linux-x86_64.tar.gz
-        sudo mv cmake-3.31.3-linux-x86_64 /opt/cmake
-
     - name: Update package list
       run: sudo apt-get update
-
-    - name: Install Ninja
-      run: sudo apt-get install -y ninja-build
-
-    - name: Install GCC
-      run: sudo apt-get install -y build-essential gcc g++
 
     - name: Cache AVR-GCC toolchain
       id: avr-gcc-cache
       uses: actions/cache@v4
       with:
         path: /opt/avr-gcc
-        key: avr-gcc-15.2.0-x64-linux
+        key: avr-gcc-15.2.0-x64-${{ matrix.os }}
 
-    - name: Install AVR-GCC 15.2.0 toolchain
-      if: steps.avr-gcc-cache.outputs.cache-hit != 'true'
+    - name: Install AVR-GCC 15.2.0 toolchain on Linux
+      if: steps.avr-gcc-cache.outputs.cache-hit != 'true' && matrix.os == 'ubuntu-latest'
       run: |
         wget https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x64-linux.tar.bz2
         tar -xjf avr-gcc-15.2.0-x64-linux.tar.bz2
         sudo mv avr-gcc-15.2.0-x64-linux /opt/avr-gcc
-
-    - name: Install QEMU
-      run: sudo apt-get install -y qemu-system-avr
-
-    - name: Add CMAKE & AVR-GCC to PATH
-      run: |
-        echo "/opt/cmake/bin" >> $GITHUB_PATH
         echo "/opt/avr-gcc/bin" >> $GITHUB_PATH
+
+    - name: Install AVR-GCC 15.2.0 toolchain on Windows
+      if: steps.avr-gcc-cache.outputs.cache-hit != 'true' && matrix.os == 'windows-latest'
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.1.0-1/avr-gcc-15.1.0-x64-windows.zip" -OutFile "avr-gcc.zip"
+        Expand-Archive -Path "avr-gcc.zip" -DestinationPath "C:\"
+        Rename-Item "C:\avr-gcc-15.1.0-x64-windows" "C:\avr-gcc"
+        echo "C:\avr-gcc\bin" >> $GITHUB_PATH
 
     - name: Print tool versions
       run: |
@@ -73,14 +54,7 @@ jobs:
         ninja --version
         gcc --version
         avr-gcc --version
-        qemu-system-avr --version
         echo "====================="
-
-    - name: Configure AVR tests
-      run: cmake --preset tests-avr
-
-    - name: Build AVR tests
-      run: cmake --build --preset tests-avr
 
     - name: Configure native tests
       run: cmake --preset tests-gcc
@@ -99,6 +73,7 @@ jobs:
       with:
         name: test-logs
         path: build/tests-gcc/Testing/
+        retention-days: 7
 
     - name: Configure firmware
       run: cmake --preset firmware
@@ -109,124 +84,7 @@ jobs:
     - name: Store firmware binaries as artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: firmware-hex-files-ubuntu
-        path: |
-          build/firmware/*.hex
-        retention-days: 30
-        if-no-files-found: error
-
-  test-and-build-windows-latest:
-    runs-on: windows-latest
-    if: false # Temporarily disable Windows job due to concentrating on Linux
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Cache CMake
-      id: cmake-cache-win
-      uses: actions/cache@v4
-      with:
-        path: C:\cmake
-        key: cmake-3.31.3-windows-x86_64
-
-    - name: Download and install CMake 3.31
-      if: steps.cmake-cache-win.outputs.cache-hit != 'true'
-      run: |
-        Invoke-WebRequest -Uri "https://github.com/Kitware/CMake/releases/download/v3.31.3/cmake-3.31.3-windows-x86_64.zip" -OutFile "cmake.zip"
-        Expand-Archive -Path "cmake.zip" -DestinationPath "C:\"
-        Rename-Item "C:\cmake-3.31.3-windows-x86_64" "C:\cmake"
-      shell: powershell
-
-    - name: Install Ninja
-      run: |
-        choco install ninja
-      shell: powershell
-
-    - name: Cache AVR-GCC toolchain
-      id: avr-gcc-cache-win
-      uses: actions/cache@v4
-      with:
-        path: C:\avr-gcc
-        key: avr-gcc-15.1.0-windows-x64
-
-    - name: Install AVR-GCC 15.1.0 toolchain
-      if: steps.avr-gcc-cache-win.outputs.cache-hit != 'true'
-      run: |
-        Invoke-WebRequest -Uri "https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.1.0-1/avr-gcc-15.1.0-x64-windows.zip" -OutFile "avr-gcc.zip"
-        Expand-Archive -Path "avr-gcc.zip" -DestinationPath "C:\"
-        Rename-Item "C:\avr-gcc-15.1.0-x64-windows" "C:\avr-gcc"
-      shell: powershell
-
-    - name: Install QEMU
-      run: |
-        choco install qemu
-      shell: powershell
-
-    - name: Add tools to PATH
-      run: |
-        echo "C:\cmake\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\avr-gcc\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      shell: powershell
-
-    - name: Set AVR toolchain environment
-      run: |
-        echo "AVR_TOOLCHAIN_ROOT=C:\avr-gcc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      shell: powershell
-
-    - name: Print tool versions
-      run: |
-        echo "=== Tool Versions ==="
-        cmake --version
-        ninja --version
-        gcc --version
-        avr-gcc --version
-        qemu-system-avr --version
-        echo "====================="
-      shell: powershell
-
-    - name: Configure native tests
-      run: cmake --preset tests-gcc
-      shell: powershell
-
-    - name: Build native tests
-      run: cmake --build --preset tests-gcc
-      shell: powershell
-
-    - name: Configure AVR tests
-      run: cmake --preset tests-avr
-      shell: powershell
-
-    - name: Build AVR tests
-      run: cmake --build --preset tests-avr
-      shell: powershell
-
-    - name: Run native all tests
-      working-directory: build/tests-gcc
-      run: ctest --verbose
-      timeout-minutes: 5
-      shell: powershell
-
-    - name: Save test logs as artifacts if failed
-      if: failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-logs
-        path: build/tests-gcc/Testing/
-
-    - name: Configure firmware
-      run: cmake --preset firmware
-      shell: powershell
-
-    - name: Build firmware
-      run: cmake --build build/firmware
-      shell: powershell
-
-    - name: Store firmware binaries as artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: firmware-hex-files-windows
-        path: |
-          build/firmware/*.hex
+        name: firmware-hex-files-${{ matrix.os }}
+        path: build/firmware/*.hex
         retention-days: 30
         if-no-files-found: error

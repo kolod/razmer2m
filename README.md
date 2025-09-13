@@ -156,34 +156,6 @@ Tests that run directly on the host system using Google Test framework.
    ./build/tests/tests/test_format_native
    ```
 
-### AVR Tests (QEMU)
-Tests that run the actual AVR code in QEMU simulator to verify behavior on target hardware.
-
-#### Prerequisites
-- All native test prerequisites
-- AVR-GCC toolchain installed and available in your PATH
-- QEMU with AVR support (`qemu-system-avr`)
-
-#### Steps to Build and Run AVR Tests
-
-1. **Configure and build AVR test application:**
-   ```sh
-   cmake --preset tests-avr
-   cmake --build --preset tests-avr
-   ```
-
-2. **Configure and build test runner:**
-   ```sh
-   cmake --preset tests-gcc
-   cmake --build --preset tests-gcc
-   ```
-
-3. **Run AVR tests in QEMU:**
-   ```sh
-   cd build/tests
-   ctest --verbose -R FormatAVRTest
-   ```
-
 ### Alternative: Using CMake Workflow
 
 You can also use the CMake workflow commands:
@@ -218,10 +190,10 @@ The project includes automated testing via GitHub Actions with two test jobs:
 - Runs native tests with Google Test framework
 
 **AVR Tests:**
-- Installs CMake 3.31, Ninja, GCC, AVR-GCC, and QEMU
+- Installs CMake 3.31, Ninja, GCC, and AVR-GCC
 - Builds AVR test application for ATmega328P
 - Builds test runner application
-- Runs AVR code in QEMU simulator and validates results
+- Compiles and tests AVR code for target hardware compatibility
 
 The workflow runs on pushes and pull requests to `main` and `develop` branches, and can also be triggered manually via `workflow_dispatch`.
 

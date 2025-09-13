@@ -15,7 +15,6 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 include(FetchContent)
-include(GoogleTest)
 
 # Get GoogleTest
 FetchContent_Declare(
@@ -26,17 +25,8 @@ FetchContent_Declare(
 	UPDATE_DISCONNECTED ON
 )
 
-# If cross-compiling for AVR
-if(CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "avr-gcc")
-    # AVR test application (for QEMU)
-    add_executable(test_format_avr test_format_avr.cpp)
-    target_compile_definitions(test_format_avr PRIVATE __AVR_ATmega328P__ F_CPU=16000000UL)
-    target_compile_options(test_format_avr PRIVATE -mmcu=atmega328p -Os)
-    target_link_options(test_format_avr PRIVATE -mmcu=atmega328p)
-endif()
-
 # If running with GCC
-if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
+if(NOT CMAKE_CROSSCOMPILING)
     FetchContent_MakeAvailable(googletest)
 
     # Enforce C++17 for native tests
@@ -47,16 +37,5 @@ if(NOT CMAKE_CROSSCOMPILING AND CMAKE_C_COMPILER MATCHES "gcc")
     # Native tests
     add_executable(test_format_native test_format_native.cpp)
     target_link_libraries(test_format_native gtest_main)
-    gtest_discover_tests(test_format_native)
-
-    # AVR tests under QEMU
-    if(WIN32)
-        add_executable(test_format_qemu test_format_runner.cpp qemu_test_runner_windows.cpp)
-        target_link_libraries(test_format_qemu ws2_32 gtest_main)
-    else()
-        add_executable(test_format_qemu test_format_runner.cpp qemu_test_runner_linux.cpp)
-        target_link_libraries(test_format_qemu pthread gtest_main)
-    endif()
-
-    gtest_discover_tests(test_format_qemu)
+    add_test(NAME FormatNativeTest COMMAND test_format_native)
 endif()

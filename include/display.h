@@ -124,15 +124,12 @@ inline void init() {
     // Initialize SPI
     spi::init();
 
-    uint8_t digits = AXIS_DIGIT_COUNT + 1;
-    if (digits > 8) digits = 8;
-
     // Initialize MAX7219
-    send_command(0x09, 0x00);    // Decode mode: no decode for all digits
-    send_command(0x0A, 0x00);    // Intensity: 1/32 (max)
-    send_command(0x0B, digits);  // Scan limit: all 8 digits
-    send_command(0x0C, 0x01);    // Shutdown register: normal operation
-    send_command(0x0F, 0x00);    // Display test: off
+    send_command(0x09, 0x00);  // Decode mode: no decode for all digits
+    send_command(0x0A, 0x00);  // Intensity: 1/32 (max)
+    send_command(0x0B, 0x07);  // Scan limit: all 8 digits
+    send_command(0x0C, 0x01);  // Shutdown register: normal operation
+    send_command(0x0F, 0x00);  // Display test: off
 }
 
 // Current column being updated (1-8)
@@ -144,8 +141,8 @@ void start_update() {
     spi::wait_until_done();
     // Prepare buffer for first column across all devices
     for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
-        tx_buffer[i * 2] = 8;      // Address (1-8)
-        tx_buffer[i * 2 + 1] = 0;  // buffer[0][i];  // Data
+        tx_buffer[i * 2] = 8;                 // Address (1-8)
+        tx_buffer[i * 2 + 1] = buffer[0][i];  // Data
     }
     // Start transmission
     spi::transmit<sizeof(tx_buffer)>(tx_buffer);
@@ -154,13 +151,13 @@ void start_update() {
 }
 
 // Continue display update sequence
-void update() {
+bool update() {
     // Skip if previous transmission is not done
-    if (spi::is_busy()) return;
+    if (spi::is_busy()) return true;
     // Stop if all columns have been updated
-    if (current_column > 7) return;
+    if (current_column > 7) return false;
     // Skip if first update not started
-    if (current_column == 0) return;
+    if (current_column == 0) return false;
     // Prepare buffer for this column across all devices & increment column
     for (uint8_t i = 0; i < AXIS_COUNT; ++i) {
         tx_buffer[i * 2 + 1] = buffer[current_column][i];  // Data
@@ -169,6 +166,8 @@ void update() {
     current_column++;
     // Start transmission
     spi::transmit<sizeof(tx_buffer)>(tx_buffer);
+
+    return true;
 }
 
 void write(const char* string) {
@@ -203,6 +202,19 @@ void write(const char* string) {
 
     // Start display update
     start_update();
+}
+
+// Clear display buffer and update display
+void clear() {
+    for (uint8_t col = 0; col < 8; col++) {
+        for (uint8_t axis = 0; axis < AXIS_COUNT; axis++) {
+            buffer[col][axis] = 0;
+        }
+    }
+    // Start display update
+    start_update();
+    // Complete update
+    while (update());
 }
 
 #endif

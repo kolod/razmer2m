@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <util/delay.h>
+
 #include "config.h"
 #include "display.h"
 #include "format.h"
@@ -27,10 +29,33 @@
 
 namespace receiver {
 
+const char* const test_msg[] = {
+    "8.        :8.        :8.        :8.        \n",  //
+    " 8.       : 8.       : 8.       : 8.       \n",  //
+    "  8.      :  8.      :  8.      :  8.      \n",  //
+    "   8.     :   8.     :   8.     :   8.     \n",  //
+    "    8.    :    8.    :    8.    :    8.    \n",  //
+    "     8.   :     8.   :     8.   :     8.   \n",  //
+    "      8.  :      8.  :      8.  :      8.  \n",  //
+    "       8. :       8. :       8. :       8. \n",  //
+    "        8.:        8.:        8.:        8.\n"   //
+};
+
+// Draw running dashes to indicate waiting for data
+inline void check_display_mode() {
+    for (uint8_t column = 0; column < 8; column++) {
+        display::write(test_msg[column]);
+        while (display::update());
+        _delay_ms(100);
+    }
+}
+
 void init() {
     gpio::init();
     display::init();
     uart::receiver::init();
+    check_display_mode();
+    display::clear();
 }
 
 void update() {
@@ -39,10 +64,8 @@ void update() {
     if (msg != nullptr) {
         // Start display update
         display::write(msg);
+        while (display::update());
     }
-
-    // Update display
-    display::update();
 }
 
 }  // namespace receiver
