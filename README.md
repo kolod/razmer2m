@@ -248,21 +248,3 @@ scoop install act
 The project includes a `.actrc` file that configures `act` to use a Docker image with updated tools:
 ```
 -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest
-```
-
-#### Alternative: Manual Docker Testing
-
-You can also run tests manually using the provided `Dockerfile.test`:
-
-```bash
-# Build test image
-docker build -f Dockerfile.test -t razmer2m-test .
-
-# Run container
-docker run -it --rm -v $(pwd):/workspace razmer2m-test
-
-# Inside container, run tests
-cmake --preset tests-gcc
-cmake --build --preset tests-gcc
-cd build/tests && ctest --verbose
-```
