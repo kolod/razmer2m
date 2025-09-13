@@ -1,5 +1,5 @@
 //    This is a part of the Razmer2M project
-//    Copyright (C) 2025-... Oleksandr kolodkin <oleksandr.kolodkin@ukr.net>
+//    Copyright (C) 2025-... Oleksandr Kolodkin <oleksandr.kolodkin@ukr.net>
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -29,11 +29,20 @@ namespace receiver {
 
 void init() {
     gpio::init();
-    uart::init();
+    display::init();
+    uart::receiver::init();
 }
 
 void update() {
-    // Receiver update logic
+    // Check if a complete message has been received
+    auto msg = uart::receiver::get_message();
+    if (msg != nullptr) {
+        // Start display update
+        display::write(msg);
+    }
+
+    // Update display
+    display::update();
 }
 
 }  // namespace receiver

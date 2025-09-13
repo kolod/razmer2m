@@ -1,5 +1,5 @@
 #    This is a part of the Razmer2M project
-#    Copyright (C) 2025-... Oleksandr kolodkin <oleksandr.kolodkin@ukr.net>
+#    Copyright (C) 2025-... Oleksandr Kolodkin <oleksandr.kolodkin@ukr.net>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ if(BUILD_EMULATOR)
         TARGET ${PROJECT_NAME}_emulator
         MCU atmega328p
         PROGRAMMER arduino
-        PORT COM6
+        PORT COM8
         BAUDRATE 115200
         VERBOSE
     )
@@ -84,9 +84,6 @@ if(BUILD_TRANSMITTER)
         PROGRAMMER arduino
         PORT /dev/ttyUSB0
         BAUDRATE 115200
-        LFUSE 0xFF
-        HFUSE 0xD9
-        EFUSE 0xFF
         VERBOSE
     )
 endif()
@@ -113,11 +110,8 @@ if(BUILD_RECEIVER)
         TARGET ${PROJECT_NAME}_receiver
         MCU atmega328p
         PROGRAMMER arduino
-        PORT /dev/ttyUSB0
+        PORT COM6
         BAUDRATE 115200
-        LFUSE 0xFF
-        HFUSE 0xD9
-        EFUSE 0xFF
         VERBOSE
     )
 endif()

@@ -1,5 +1,5 @@
 //    This is a part of the Razmer2M project
-//    Copyright (C) 2025-... Oleksandr kolodkin <oleksandr.kolodkin@ukr.net>
+//    Copyright (C) 2025-... Oleksandr Kolodkin <oleksandr.kolodkin@ukr.net>
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ void next_algorithm() {
 // Function must be called 50 times per second in interrupt routine
 void update_50_hz() {
     // Emulate sending message from transmitter
-    uart::transmit(msg);
+    uart::transmitter::transmit(msg);
 
     // Update axis values
     if (axis_ready) {
@@ -155,7 +155,7 @@ void update() {
 
 inline void init() {
     gpio::init();
-    uart::init();
+    uart::transmitter::init();
     display::init();
     timer::init(update_2000_hz);
 }

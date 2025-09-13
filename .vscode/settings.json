@@ -18,5 +18,29 @@
     "editor.tabSize": 4,
     "editor.insertSpaces": true,
     "editor.formatOnSave": true,
-    "editor.formatOnSaveMode": "file"
+    "editor.formatOnSaveMode": "file",
+    "cSpell.words": [
+        "atmega",
+        "AVRDUDE",
+        "BAUDRATE",
+        "Kolodkin",
+        "LFUSE",
+        "microcontroller",
+        "Oleksandr",
+        "Razmer",
+        "RXCIE",
+        "UDRIE",
+        "USART"
+    ],
+    "cSpell.enabledFileTypes": {
+        "*": false,
+        "markdown": true,
+        "json": true,
+        "jsonc": true,
+        "cpp": true,
+        "c": true,
+        "h": true
+    },
+    "cSpell.language": "en,uk",
+    "cSpell.minWordLength": 5
 }
