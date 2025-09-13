@@ -14,9 +14,9 @@ jobs:
   test-and-build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-          fail-fast: false
 
     steps:
     - name: Checkout code
