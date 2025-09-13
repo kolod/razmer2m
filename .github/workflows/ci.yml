@@ -40,18 +40,18 @@ jobs:
     - name: Install AVR-GCC 15.2.0 toolchain on Windows
       if: steps.avr-gcc-cache.outputs.cache-hit != 'true' && matrix.os == 'windows-latest'
       run: |
-        Invoke-WebRequest -Uri "https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.1.0-1/avr-gcc-15.1.0-x64-windows.zip" -OutFile "avr-gcc.zip"
+        Invoke-WebRequest -Uri "https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x64-windows.zip" -OutFile "avr-gcc.zip"
         Expand-Archive -Path "avr-gcc.zip" -DestinationPath "C:\"
-        Rename-Item "C:\avr-gcc-15.1.0-x64-windows" "C:\avr-gcc"
+        Rename-Item "C:\avr-gcc-15.2.0-x64-windows" "C:\avr-gcc"
         echo "C:\avr-gcc\bin" >> $GITHUB_PATH
 
     - name: Print tool versions
       run: |
         echo "=== Tool Versions ==="
-        cmake --version
-        ninja --version
-        gcc --version
-        avr-gcc --version
+        echo "CMAKE_VERSION  : $(cmake --version)"
+        echo "NINJA_VERSION  : $(ninja --version)"
+        echo "GCC_VERSION    : $(gcc --version)"
+        echo "AVR_GCC_VERSION: $(avr-gcc --version)"
         echo "====================="
 
     - name: Configure native tests
