@@ -21,9 +21,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Update package list
-      run: sudo apt-get update
-
     - name: Cache AVR-GCC toolchain
       id: avr-gcc-cache
       uses: actions/cache@v4
