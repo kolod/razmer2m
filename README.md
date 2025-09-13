@@ -1,9 +1,8 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://vshymanskyy.github.io/StandWithUkraine/)
 
-# Razmer2M
+# Razmer2M [![CI (Linux & Windows)](https://github.com/kolod/razmer2m/actions/workflows/ci.yml/badge.svg)](https://github.com/kolod/razmer2m/actions/workflows/tests.yml)
 
 A hardware and software system for replacing a cathode ray tube indicator with an LED display for machine tools equipped with a numerical control device (NCU) "Razmer 2M 1104".
-
 
 ## Configuration
 
