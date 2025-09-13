@@ -50,14 +50,18 @@ if(BUILD_EMULATOR)
     target_create_hex(${PROJECT_NAME}_emulator)
     target_create_binary(${PROJECT_NAME}_emulator)
     target_create_listing(${PROJECT_NAME}_emulator)
-    avrdude_upload(upload_${PROJECT_NAME}_emulator
-        TARGET ${PROJECT_NAME}_emulator
-        MCU atmega328p
-        PROGRAMMER arduino
-        PORT COM8
-        BAUDRATE 115200
-        VERBOSE
-    )
+    if(AVRDUDE_FOUND)    
+        avrdude_upload(upload_${PROJECT_NAME}_emulator
+            TARGET ${PROJECT_NAME}_emulator
+            MCU atmega328p
+            PROGRAMMER arduino
+            PORT COM8
+            BAUDRATE 115200
+            VERBOSE
+        )
+    else()
+        message(WARNING "AVRDUDE not found, skipping upload target for emulator")
+    endif()
 endif()
 
 # Transmitter target
@@ -78,14 +82,19 @@ if(BUILD_TRANSMITTER)
     target_create_hex(${PROJECT_NAME}_transmitter)
     target_create_binary(${PROJECT_NAME}_transmitter)
     target_create_listing(${PROJECT_NAME}_transmitter)
-    avrdude_upload("upload_${PROJECT_NAME}_transmitter"
-        TARGET ${PROJECT_NAME}_transmitter
-        MCU atmega328p
-        PROGRAMMER arduino
-        PORT /dev/ttyUSB0
-        BAUDRATE 115200
-        VERBOSE
-    )
+
+    if(AVRDUDE_FOUND)
+        avrdude_upload("upload_${PROJECT_NAME}_transmitter"
+            TARGET ${PROJECT_NAME}_transmitter
+            MCU atmega328p
+            PROGRAMMER arduino
+            PORT /dev/ttyUSB0
+            BAUDRATE 115200
+            VERBOSE
+        )
+    else()
+        message(WARNING "AVRDUDE not found, skipping upload target for transmitter")
+    endif()
 endif()
 
 # Receiver target
@@ -106,12 +115,17 @@ if(BUILD_RECEIVER)
     target_create_hex(${PROJECT_NAME}_receiver)
     target_create_binary(${PROJECT_NAME}_receiver)
     target_create_listing(${PROJECT_NAME}_receiver)
-    avrdude_upload(upload_${PROJECT_NAME}_receiver
-        TARGET ${PROJECT_NAME}_receiver
-        MCU atmega328p
-        PROGRAMMER arduino
-        PORT COM6
-        BAUDRATE 115200
-        VERBOSE
-    )
+
+    if(AVRDUDE_FOUND)
+        avrdude_upload(upload_${PROJECT_NAME}_receiver
+            TARGET ${PROJECT_NAME}_receiver
+            MCU atmega328p
+            PROGRAMMER arduino
+            PORT COM6
+            BAUDRATE 115200
+            VERBOSE
+        )
+    else()
+        message(WARNING "AVRDUDE not found, skipping upload target for receiver")
+    endif()
 endif()
