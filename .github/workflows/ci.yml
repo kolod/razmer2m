@@ -44,6 +44,10 @@ jobs:
         Expand-Archive -Path "avr-gcc.zip" -DestinationPath "C:\"
         Rename-Item "C:\avr-gcc-15.2.0-x64-windows" "C:\avr-gcc"
         echo "C:\avr-gcc\bin" >> $GITHUB_PATH
+        dir "C:\avr-gcc\bin\"
+
+    - name: Print PATH
+      run: echo $PATH
 
     - name: Print tool versions
       run: |
@@ -83,6 +87,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: firmware-hex-files-${{ matrix.os }}
-        path: build/firmware/*.hex
+        path: build/firmware/firmware/*.hex
         retention-days: 30
         if-no-files-found: error
